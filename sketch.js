@@ -18,6 +18,20 @@ const screenX = 750;
 // Colors - Notion-inspired black and white scheme
 let bgColor, waveColor, barrierColor, screenColor, textColor, accentColor;
 
+// Dark mode colors (Softer Dark Grey)
+const darkColors = {
+    bg: [18, 18, 18],           // #121212 - softer dark grey
+    wave: [224, 224, 224],      // #e0e0e0 - off-white text
+    barrier: [85, 85, 85],      // #555555 - medium grey
+    screen: [42, 42, 42],       // #2a2a2a - lighter dark grey
+    text: [224, 224, 224],      // off-white
+    accent: [255, 255, 255],    // white
+    constructive: [200, 200, 200],
+    destructive: [100, 100, 100],
+    labelBg: [30, 30, 30],      // Dark box background
+    labelBorder: [255, 255, 255] // White border
+};
+
 // Light mode colors (Simple Black & White)
 const lightColors = {
     bg: [255, 255, 255],        // White
@@ -27,23 +41,14 @@ const lightColors = {
     text: [0, 0, 0],            // Black
     accent: [0, 0, 0],          // Black
     constructive: [100, 100, 100],
-    destructive: [200, 200, 200]
-};
-
-// Dark mode colors
-const darkColors = {
-    bg: [0, 0, 0],              // Black
-    wave: [255, 255, 255],      // White
-    barrier: [150, 150, 150],   // Light Grey
-    screen: [50, 50, 50],       // Dark Grey
-    text: [255, 255, 255],      // White
-    accent: [255, 255, 255],    // White
-    constructive: [200, 200, 200],
-    destructive: [100, 100, 100]
+    destructive: [200, 200, 200],
+    labelBg: [255, 255, 255],   // White box background
+    labelBorder: [0, 0, 0]      // Black border
 };
 
 // Current color set
 let colors = lightColors;
+let labelBgColor, labelBorderColor;
 
 function updateColors(theme) {
     colors = theme === 'dark' ? darkColors : lightColors;
@@ -53,6 +58,8 @@ function updateColors(theme) {
     screenColor = colors.screen;
     textColor = colors.text;
     accentColor = colors.accent;
+    labelBgColor = colors.labelBg;
+    labelBorderColor = colors.labelBorder;
 }
 
 // Initialize with saved theme or light
@@ -136,13 +143,7 @@ function drawWaveSource() {
     ellipse(30, height / 2, 8, 8);
 
     // Label
-    push();
-    fill(textColor[0], textColor[1], textColor[2]);
-    noStroke();
-    textAlign(CENTER);
-    textSize(11);
-    text("Source", 30, height / 2 + 35);
-    pop();
+    drawLabelWithBox("Source", 30, height / 2 + 35);
 }
 
 function drawPlaneWaves() {
@@ -351,14 +352,7 @@ function drawIntensityGraph(slit1Y, slit2Y) {
     endShape();
 
     // Intensity label
-    push();
-    translate(graphX + graphWidth / 2, height - 10);
-    fill(textColor[0], textColor[1], textColor[2]);
-    noStroke();
-    textAlign(CENTER);
-    textSize(11);
-    text("Intensity", 0, 0);
-    pop();
+    drawLabelWithBox("Intensity", graphX + graphWidth / 2, height - 10);
 
     // Draw intensity bars on screen
     for (let y = 30; y < height - 30; y += 3) {
@@ -387,43 +381,33 @@ function drawIntensityGraph(slit1Y, slit2Y) {
 }
 
 function drawLabels(slit1Y, slit2Y) {
-    // Use push/pop to isolate text styling
-    push();
-    fill(textColor[0], textColor[1], textColor[2]);
-    noStroke();
-    textAlign(CENTER);
-    textSize(11);
-
     // Barrier label
-    text("Double Slit", barrierX, height - 10);
-    pop();
+    drawLabelWithBox("Double Slit", barrierX, height - 10, {
+        arrowTo: { x: barrierX, y: height - 40 }
+    });
 
     // Slit labels
-    push();
-    fill(textColor[0], textColor[1], textColor[2]);
-    noStroke();
-    textSize(10);
+    drawLabelWithBox("Slit 1", barrierX + 40, slit1Y - 10, {
+        align: LEFT,
+        arrowTo: { x: barrierX + 8, y: slit1Y }
+    });
 
-    textAlign(CENTER);
-    text("Slit 1", barrierX + 30, slit1Y - 10);
-    text("Slit 2", barrierX + 30, slit2Y + 15);
-    pop();
+    drawLabelWithBox("Slit 2", barrierX + 40, slit2Y + 15, {
+        align: LEFT,
+        arrowTo: { x: barrierX + 8, y: slit2Y }
+    });
 
     // Screen label
-    push();
-    fill(textColor[0], textColor[1], textColor[2]);
-    noStroke();
-    textAlign(CENTER);
-    textSize(10);
-    text("Screen", screenX, height - 10);
-    pop();
+    drawLabelWithBox("Screen", screenX, height - 10, {
+        arrowTo: { x: screenX, y: height - 40 }
+    });
 
-    // Physics info
+    // Physics info (Standard text without box for cleaner look in corner)
     push();
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(LEFT);
-    textSize(10);
+    textSize(11); // Slightly larger for readability
     text(`λ = ${wavelength}px`, 15, 25);
     text(`d = ${slitSeparation}px`, 15, 40);
     pop();
@@ -433,10 +417,65 @@ function drawLabels(slit1Y, slit2Y) {
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(RIGHT);
-    textSize(11);
+    textSize(12);
     text("Δ = d·sin(θ) = nλ", screenX - 30, 25);
-    textSize(9);
-    text("(constructive interference)", screenX - 30, 38);
+    textSize(10);
+    text("(constructive interference)", screenX - 30, 40);
+    pop();
+}
+
+// Helper to draw boxed labels with optional arrows
+function drawLabelWithBox(txt, x, y, options = {}) {
+    push();
+
+    // Settings
+    textSize(options.textSize || 11);
+    let padding = 6;
+    let boxW = textWidth(txt) + padding * 2;
+    let boxH = (options.textSize || 11) + padding * 2;
+
+    // Handle alignment for box position
+    let boxX = x;
+    if (options.align === LEFT) {
+        boxX = x + boxW / 2;
+    } else if (options.align === RIGHT) {
+        boxX = x - boxW / 2;
+    }
+
+    // Draw Arrow if requested
+    if (options.arrowTo) {
+        stroke(labelBorderColor[0], labelBorderColor[1], labelBorderColor[2]);
+        strokeWeight(1);
+
+        // Calculate closest point on box to the target
+        let angle = atan2(options.arrowTo.y - y, options.arrowTo.x - boxX);
+        let startX = boxX + cos(angle) * boxW / 3; // Approx start point
+        let startY = y + sin(angle) * boxH / 3;
+
+        line(startX, startY, options.arrowTo.x, options.arrowTo.y);
+
+        // Arrowhead
+        push();
+        translate(options.arrowTo.x, options.arrowTo.y);
+        rotate(angle);
+        fill(labelBorderColor[0], labelBorderColor[1], labelBorderColor[2]);
+        triangle(0, 0, -5, -2, -5, 2);
+        pop();
+    }
+
+    // Draw Box
+    fill(labelBgColor[0], labelBgColor[1], labelBgColor[2]);
+    stroke(labelBorderColor[0], labelBorderColor[1], labelBorderColor[2]);
+    strokeWeight(1);
+    rectMode(CENTER);
+    rect(boxX, y, boxW, boxH, 4); // Rounded corners
+
+    // Draw Text
+    fill(textColor[0], textColor[1], textColor[2]);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    text(txt, boxX, y + 1); // Adjust for vertical centering
+
     pop();
 }
 
