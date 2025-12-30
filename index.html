@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double-Slit Experiment Simulation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Light mode (default) - Aged/old paper colors */
+            --bg-primary: #e8e0d0;
+            --bg-secondary: #ddd4c2;
+            --bg-tertiary: #d2c8b4;
+            --text-primary: #2d2a26;
+            --text-secondary: #4a4540;
+            --text-muted: #6b6560;
+            --accent: #3d2c24;
+            --accent-hover: #4f3a30;
+            --border: rgba(61, 44, 36, 0.2);
+            --border-hover: rgba(61, 44, 36, 0.35);
+            --shadow: rgba(61, 44, 36, 0.12);
+            --shadow-strong: rgba(61, 44, 36, 0.25);
+            --value-color: #3d2c24;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #191919;
+            --bg-secondary: #252525;
+            --bg-tertiary: #2f2f2f;
+            --text-primary: #ebebeb;
+            --text-secondary: #a3a3a3;
+            --text-muted: #6b6b6b;
+            --accent: #d4c4b5;
+            --accent-hover: #e5d9cd;
+            --border: rgba(255, 255, 255, 0.1);
+            --border-hover: rgba(255, 255, 255, 0.2);
+            --shadow: rgba(0, 0, 0, 0.3);
+            --shadow-strong: rgba(0, 0, 0, 0.5);
+            --value-color: #d4c4b5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* iPhone-style pill toggle switch */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 56px;
+            height: 32px;
+            border-radius: 16px;
+            border: none;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            padding: 3px;
+            transition: background 0.3s ease;
+            z-index: 100;
+        }
+
+        .theme-toggle:hover {
+            background: var(--text-muted);
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--bg-primary);
+            left: 3px;
+            top: 3px;
+            transition: transform 0.3s ease, background 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        [data-theme="dark"] .theme-toggle::before {
+            transform: translateX(24px);
+        }
+
+        .theme-toggle .icon {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            stroke: var(--text-primary);
+            fill: none;
+            stroke-width: 1.5;
+            transition: opacity 0.3s ease;
+        }
+
+        .theme-toggle .icon-sun {
+            left: 6px;
+            opacity: 1;
+        }
+
+        .theme-toggle .icon-moon {
+            right: 6px;
+            opacity: 0.4;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-sun {
+            opacity: 0.4;
+        }
+
+        [data-theme="dark"] .theme-toggle .icon-moon {
+            opacity: 1;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .subtitle {
+            font-weight: 300;
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        #canvas-container {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px var(--shadow-strong);
+            border: 1px solid var(--border);
+        }
+
+        .controls {
+            display: flex;
+            gap: 30px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-secondary);
+            padding: 15px 25px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px var(--shadow);
+            transition: all 0.3s ease;
+        }
+
+        .control-group:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px var(--shadow-strong);
+        }
+
+        .control-group label {
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .control-group input[type="range"] {
+            width: 150px;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            outline: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .control-group input[type="range"]:focus {
+            outline: none;
+            border: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.2s ease;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: var(--accent-hover);
+            box-shadow: 0 4px 12px var(--shadow-strong);
+        }
+
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.2s ease;
+        }
+
+        .value-display {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--value-color);
+        }
+
+        .info-panel {
+            margin-top: 25px;
+            max-width: 800px;
+            text-align: center;
+            padding: 20px 30px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .info-panel p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .info-panel strong {
+            color: var(--text-primary);
+        }
+
+        .legend {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.wave {
+            background: var(--text-primary);
+        }
+
+        .legend-dot.constructive {
+            background: #4a4a4a;
+        }
+
+        [data-theme="dark"] .legend-dot.constructive {
+            background: #b8b8b8;
+        }
+
+        .legend-dot.destructive {
+            background: #a0a0a0;
+        }
+
+        [data-theme="dark"] .legend-dot.destructive {
+            background: #5a5a5a;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <!-- Sun icon (outline only) -->
+        <svg class="icon icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="4" />
+            <path
+                d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+        </svg>
+        <!-- Moon icon (outline only) -->
+        <svg class="icon icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+    </button>
+
+    <h1>🌊 Double-Slit Experiment</h1>
+    <p class="subtitle">Wave interference & quantum mechanics visualization</p>
+
+    <div id="canvas-container"></div>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>Wavelength</label>
+            <input type="range" id="wavelengthSlider" min="15" max="50" value="30">
+            <span class="value-display" id="wavelengthValue">30</span>
+        </div>
+        <div class="control-group">
+            <label>Slit Separation</label>
+            <input type="range" id="slitSepSlider" min="30" max="150" value="80">
+            <span class="value-display" id="slitSepValue">80</span>
+        </div>
+        <div class="control-group">
+            <label>Wave Speed</label>
+            <input type="range" id="speedSlider" min="1" max="10" value="5">
+            <span class="value-display" id="speedValue">5</span>
+        </div>
+        <div class="control-group">
+            <label>Slit Width</label>
+            <input type="range" id="slitWidthSlider" min="5" max="40" value="15">
+            <span class="value-display" id="slitWidthValue">15</span>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <p>This simulation demonstrates the famous double-slit experiment. Waves pass through two narrow slits and
+            interfere,
+            creating a distinctive pattern of bright and dark bands. The <strong>intensity graph</strong> on the right
+            shows
+            constructive interference (bright) and destructive interference (dark) regions.</p>
+        <div class="legend">
+            <div class="legend-item"><span class="legend-dot wave"></span> Wave fronts</div>
+            <div class="legend-item"><span class="legend-dot constructive"></span> Constructive</div>
+            <div class="legend-item"><span class="legend-dot destructive"></span> Destructive</div>
+        </div>
+    </div>
+
+    <script src="sketch.js"></script>
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // Check for saved theme preference or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            html.setAttribute('data-theme', 'dark');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                // Update p5.js colors
+                if (typeof updateColors === 'function') updateColors('light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                // Update p5.js colors
+                if (typeof updateColors === 'function') updateColors('dark');
+            }
+        });
+    </script>
+</body>
+
+</html>
