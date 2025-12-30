@@ -18,28 +18,28 @@ const screenX = 750;
 // Colors - Notion-inspired black and white scheme
 let bgColor, waveColor, barrierColor, screenColor, textColor, accentColor;
 
-// Light mode colors (aged/old paper)
+// Light mode colors (Simple Black & White)
 const lightColors = {
-    bg: [232, 224, 208],        // #e8e0d0 - darker aged paper
-    wave: [45, 42, 38],         // #2d2a26 - dark text color
-    barrier: [180, 170, 150],   // warm gray
-    screen: [195, 185, 165],    // light warm gray
-    text: [45, 42, 38],         // dark brown-black
-    accent: [61, 44, 36],       // #3d2c24 - dark brown
-    constructive: [70, 70, 70],
-    destructive: [160, 160, 160]
+    bg: [255, 255, 255],        // White
+    wave: [0, 0, 0],            // Black
+    barrier: [100, 100, 100],   // Grey
+    screen: [200, 200, 200],    // Light Grey
+    text: [0, 0, 0],            // Black
+    accent: [0, 0, 0],          // Black
+    constructive: [100, 100, 100],
+    destructive: [200, 200, 200]
 };
 
 // Dark mode colors
 const darkColors = {
-    bg: [25, 25, 25],           // #191919
-    wave: [235, 235, 235],      // #ebebeb - light text
-    barrier: [60, 60, 60],
-    screen: [50, 50, 50],
-    text: [235, 235, 235],
-    accent: [212, 196, 181],    // #d4c4b5
+    bg: [0, 0, 0],              // Black
+    wave: [255, 255, 255],      // White
+    barrier: [150, 150, 150],   // Light Grey
+    screen: [50, 50, 50],       // Dark Grey
+    text: [255, 255, 255],      // White
+    accent: [255, 255, 255],    // White
     constructive: [200, 200, 200],
-    destructive: [80, 80, 80]
+    destructive: [100, 100, 100]
 };
 
 // Current color set

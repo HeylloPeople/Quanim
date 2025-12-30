@@ -9,36 +9,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Light mode (default) - Aged/old paper colors */
-            --bg-primary: #e8e0d0;
-            --bg-secondary: #ddd4c2;
-            --bg-tertiary: #d2c8b4;
-            --text-primary: #2d2a26;
-            --text-secondary: #4a4540;
-            --text-muted: #6b6560;
-            --accent: #3d2c24;
-            --accent-hover: #4f3a30;
-            --border: rgba(61, 44, 36, 0.2);
-            --border-hover: rgba(61, 44, 36, 0.35);
-            --shadow: rgba(61, 44, 36, 0.12);
-            --shadow-strong: rgba(61, 44, 36, 0.25);
-            --value-color: #3d2c24;
+            /* Light mode (default) - Simple Black & White */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f0f0f0;
+            --bg-tertiary: #e0e0e0;
+            --text-primary: #000000;
+            --text-secondary: #333333;
+            --text-muted: #666666;
+            --accent: #000000;
+            --accent-hover: #333333;
+            --border: #000000;
+            --border-hover: #333333;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --shadow-strong: rgba(0, 0, 0, 0.2);
+            --value-color: #000000;
         }
 
         [data-theme="dark"] {
-            --bg-primary: #191919;
-            --bg-secondary: #252525;
-            --bg-tertiary: #2f2f2f;
-            --text-primary: #ebebeb;
-            --text-secondary: #a3a3a3;
-            --text-muted: #6b6b6b;
-            --accent: #d4c4b5;
-            --accent-hover: #e5d9cd;
-            --border: rgba(255, 255, 255, 0.1);
-            --border-hover: rgba(255, 255, 255, 0.2);
-            --shadow: rgba(0, 0, 0, 0.3);
-            --shadow-strong: rgba(0, 0, 0, 0.5);
-            --value-color: #d4c4b5;
+            /* Dark mode - Simple Black & White */
+            --bg-primary: #000000;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+            --text-muted: #999999;
+            --accent: #ffffff;
+            --accent-hover: #cccccc;
+            --border: #ffffff;
+            --border-hover: #cccccc;
+            --shadow: rgba(255, 255, 255, 0.1);
+            --shadow-strong: rgba(255, 255, 255, 0.2);
+            --value-color: #ffffff;
         }
 
         * {
@@ -59,7 +60,6 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* iPhone-style pill toggle switch */
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -67,29 +67,28 @@
             width: 56px;
             height: 32px;
             border-radius: 16px;
-            border: none;
-            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            background: var(--bg-primary);
             cursor: pointer;
-            padding: 3px;
-            transition: background 0.3s ease;
+            padding: 2px;
+            transition: background 0.3s ease, border-color 0.3s ease;
             z-index: 100;
         }
 
         .theme-toggle:hover {
-            background: var(--text-muted);
+            background: var(--bg-secondary);
         }
 
         .theme-toggle::before {
             content: '';
             position: absolute;
-            width: 26px;
-            height: 26px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: var(--bg-primary);
-            left: 3px;
-            top: 3px;
+            background: var(--text-primary);
+            left: 4px;
+            top: 4px;
             transition: transform 0.3s ease, background 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         [data-theme="dark"] .theme-toggle::before {
@@ -288,12 +287,95 @@
             background: #b8b8b8;
         }
 
-        .legend-dot.destructive {
-            background: #a0a0a0;
-        }
-
         [data-theme="dark"] .legend-dot.destructive {
             background: #5a5a5a;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 1024px) {
+            #canvas-container {
+                width: 100%;
+                overflow-x: auto;
+                border-radius: 12px;
+            }
+
+            #canvas-container canvas {
+                /* Let p5.js handle accurate sizing/scaling if implemented, or just fit width */
+                max-width: 100%;
+                height: auto !important;
+            }
+
+            .controls {
+                gap: 20px;
+                padding: 0 10px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 15px 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                text-align: center;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+                text-align: center;
+            }
+
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+                width: 100%;
+                max-width: 500px;
+            }
+
+            .control-group {
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+                padding: 15px 20px;
+            }
+
+            .control-group input[type="range"] {
+                width: 40%;
+            }
+
+            .info-panel {
+                padding: 15px;
+                margin-top: 20px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+                margin-top: 30px;
+            }
+
+            .control-group {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .control-group input[type="range"] {
+                width: 100%;
+            }
+
+            .legend {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
         }
     </style>
 </head>
