@@ -1,59 +1,105 @@
 // Double-Slit Experiment Simulation
-// Demonstrates wave interference patterns
+// Educational 3D visualization with real wavelengths
+// Rotated 90° clockwise: Source at top, barrier horizontal, screen at bottom
 
-let wavelength = 30;
+let wavelength = 550; // in nanometers
 let slitSeparation = 80;
 let waveSpeed = 5;
 let slitWidth = 15;
 let time = 0;
 
-// Canvas dimensions
-const canvasWidth = 900;
+// Canvas dimensions - wider to fit graph on right
+const canvasWidth = 1100;
 const canvasHeight = 550;
 
-// Barrier and screen positions
-const barrierX = 200;
-const screenX = 750;
+// Layout - simulation on left, graph on right
+const simWidth = 700;
+const graphWidth = 350;
+const graphX = simWidth + 30;
 
-// Colors - Notion-inspired black and white scheme
-let bgColor, waveColor, barrierColor, screenColor, textColor, accentColor;
+// Scene positions (now vertical - Y coordinates)
+const barrierY = 180;
+const screenY = 480;
 
-// Dark mode colors (Softer Dark Grey)
+// Colors
+let bgColor, barrierColor, screenColor, textColor, accentColor;
+
 const darkColors = {
-    bg: [18, 18, 18],           // #121212 - softer dark grey
-    wave: [224, 224, 224],      // #e0e0e0 - off-white text
-    barrier: [85, 85, 85],      // #555555 - medium grey
-    screen: [42, 42, 42],       // #2a2a2a - lighter dark grey
-    text: [224, 224, 224],      // off-white
-    accent: [255, 255, 255],    // white
-    constructive: [200, 200, 200],
-    destructive: [100, 100, 100],
-    labelBg: [30, 30, 30],      // Dark box background
-    labelBorder: [255, 255, 255] // White border
+    bg: [25, 30, 40],
+    barrier: [100, 110, 130],
+    screen: [80, 90, 110],
+    text: [220, 220, 220],
+    accent: [255, 255, 255],
+    labelBg: [35, 40, 55],
+    labelBorder: [180, 180, 180]
 };
 
-// Light mode colors (Simple Black & White)
 const lightColors = {
-    bg: [255, 255, 255],        // White
-    wave: [0, 0, 0],            // Black
-    barrier: [100, 100, 100],   // Grey
-    screen: [200, 200, 200],    // Light Grey
-    text: [0, 0, 0],            // Black
-    accent: [0, 0, 0],          // Black
-    constructive: [100, 100, 100],
-    destructive: [200, 200, 200],
-    labelBg: [255, 255, 255],   // White box background
-    labelBorder: [0, 0, 0]      // Black border
+    bg: [248, 250, 252],
+    barrier: [120, 130, 150],
+    screen: [150, 160, 180],
+    text: [40, 40, 50],
+    accent: [0, 0, 0],
+    labelBg: [255, 255, 255],
+    labelBorder: [80, 80, 80]
 };
 
-// Current color set
 let colors = lightColors;
 let labelBgColor, labelBorderColor;
+
+// Convert wavelength (nm) to RGB
+function wavelengthToColor(wl) {
+    let r, g, b;
+
+    if (wl >= 380 && wl < 440) {
+        r = -(wl - 440) / (440 - 380);
+        g = 0;
+        b = 1;
+    } else if (wl >= 440 && wl < 490) {
+        r = 0;
+        g = (wl - 440) / (490 - 440);
+        b = 1;
+    } else if (wl >= 490 && wl < 510) {
+        r = 0;
+        g = 1;
+        b = -(wl - 510) / (510 - 490);
+    } else if (wl >= 510 && wl < 580) {
+        r = (wl - 510) / (580 - 510);
+        g = 1;
+        b = 0;
+    } else if (wl >= 580 && wl < 645) {
+        r = 1;
+        g = -(wl - 645) / (645 - 580);
+        b = 0;
+    } else if (wl >= 645 && wl <= 780) {
+        r = 1;
+        g = 0;
+        b = 0;
+    } else {
+        r = 0; g = 0; b = 0;
+    }
+
+    let factor;
+    if (wl >= 380 && wl < 420) {
+        factor = 0.3 + 0.7 * (wl - 380) / (420 - 380);
+    } else if (wl >= 420 && wl <= 700) {
+        factor = 1.0;
+    } else if (wl > 700 && wl <= 780) {
+        factor = 0.3 + 0.7 * (780 - wl) / (780 - 700);
+    } else {
+        factor = 0;
+    }
+
+    return [
+        Math.round(r * factor * 255),
+        Math.round(g * factor * 255),
+        Math.round(b * factor * 255)
+    ];
+}
 
 function updateColors(theme) {
     colors = theme === 'dark' ? darkColors : lightColors;
     bgColor = colors.bg;
-    waveColor = colors.wave;
     barrierColor = colors.barrier;
     screenColor = colors.screen;
     textColor = colors.text;
@@ -62,20 +108,16 @@ function updateColors(theme) {
     labelBorderColor = colors.labelBorder;
 }
 
-// Initialize with saved theme or light
 function initColors() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     updateColors(savedTheme);
 }
 
 function setup() {
-    // Initialize colors based on saved theme
     initColors();
-
     const canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('canvas-container');
 
-    // Setup event listeners for controls
     document.getElementById('wavelengthSlider').addEventListener('input', function () {
         wavelength = parseInt(this.value);
         document.getElementById('wavelengthValue').textContent = this.value;
@@ -101,385 +143,421 @@ function draw() {
     background(bgColor);
     time += 0.05 * waveSpeed;
 
-    // Calculate slit positions
-    const centerY = height / 2;
-    const slit1Y = centerY - slitSeparation / 2;
-    const slit2Y = centerY + slitSeparation / 2;
+    const waveColor = wavelengthToColor(wavelength);
+    const simWavelength = map(wavelength, 380, 780, 20, 50);
 
-    // Draw wave source (left side)
-    drawWaveSource();
+    const centerX = simWidth / 2;
+    const slit1X = centerX - slitSeparation / 2;
+    const slit2X = centerX + slitSeparation / 2;
 
-    // Draw incoming plane waves
-    drawPlaneWaves();
+    // Draw simulation (rotated 90° clockwise)
+    drawWaveSource(waveColor);
+    drawIncomingWaves(waveColor, simWavelength);
+    drawCircularWaves(slit1X, slit2X, waveColor, simWavelength);
+    drawSmoothInterference(slit1X, slit2X, waveColor, simWavelength);
+    drawBarrier3D(slit1X, slit2X);
+    drawScreen3D(slit1X, slit2X, waveColor, simWavelength);
 
-    // Draw the barrier with slits
-    drawBarrier(slit1Y, slit2Y);
+    // Draw graph on the right side
+    drawWaveGraph(slit1X, slit2X, waveColor, simWavelength);
 
-    // Draw interference pattern
-    drawInterferencePattern(slit1Y, slit2Y);
-
-    // Draw detection screen
-    drawScreen();
-
-    // Draw intensity graph
-    drawIntensityGraph(slit1Y, slit2Y);
-
-    // Draw labels
-    drawLabels(slit1Y, slit2Y);
+    // Labels
+    drawLabels(waveColor);
 }
 
-function drawWaveSource() {
-    // Glowing wave source
-    for (let r = 40; r > 0; r -= 5) {
-        let alpha = map(r, 0, 40, 150, 0);
+// Wave source at top center
+function drawWaveSource(waveColor) {
+    push();
+    const sourceX = simWidth / 2;
+    const sourceY = 50;
+
+    for (let r = 35; r > 0; r -= 5) {
+        let alpha = map(r, 0, 35, 180, 0);
         fill(waveColor[0], waveColor[1], waveColor[2], alpha);
         noStroke();
-        ellipse(30, height / 2, r, r);
+        ellipse(sourceX, sourceY, r, r);
     }
 
-    // Core
-    fill(accentColor[0], accentColor[1], accentColor[2]);
-    noStroke();
-    ellipse(30, height / 2, 8, 8);
-
-    // Label
-    drawLabelWithBox("Source", 30, height / 2 + 35);
+    fill(255, 255, 240);
+    ellipse(sourceX, sourceY, 12, 12);
+    pop();
 }
 
-function drawPlaneWaves() {
-    // Draw plane waves before the barrier
-    stroke(waveColor[0], waveColor[1], waveColor[2], 80);
+// Horizontal wave fronts moving downward
+function drawIncomingWaves(waveColor, simWavelength) {
+    push();
+    stroke(waveColor[0], waveColor[1], waveColor[2], 60);
     strokeWeight(2);
 
-    for (let x = 60; x < barrierX; x += wavelength) {
-        let phase = (x - time * 3) % wavelength;
-        if (phase < 0) phase += wavelength;
-        let waveX = x - phase;
+    for (let y = 80; y < barrierY - 20; y += simWavelength) {
+        let phase = (y - time * 3) % simWavelength;
+        if (phase < 0) phase += simWavelength;
+        let waveY = y - phase;
 
-        if (waveX > 50 && waveX < barrierX - 5) {
-            // Fade near the barrier
-            let alpha = map(waveX, barrierX - 50, barrierX, 80, 20);
-            alpha = constrain(alpha, 20, 80);
+        if (waveY > 60 && waveY < barrierY - 25) {
+            let alpha = map(waveY, barrierY - 80, barrierY - 25, 60, 10);
+            alpha = constrain(alpha, 10, 60);
             stroke(waveColor[0], waveColor[1], waveColor[2], alpha);
-            line(waveX, 30, waveX, height - 30);
+            line(80, waveY, simWidth - 80, waveY);
         }
     }
+    pop();
 }
 
-function drawBarrier(slit1Y, slit2Y) {
-    // Main barrier
-    fill(barrierColor);
-    noStroke();
-
-    // Top section
-    rect(barrierX - 8, 0, 16, slit1Y - slitWidth / 2);
-
-    // Middle section (between slits)
-    rect(barrierX - 8, slit1Y + slitWidth / 2, 16, slitSeparation - slitWidth);
-
-    // Bottom section
-    rect(barrierX - 8, slit2Y + slitWidth / 2, 16, height - (slit2Y + slitWidth / 2));
-
-    // Slit highlighting (glowing edges)
-    for (let i = 0; i < 3; i++) {
-        let alpha = map(i, 0, 3, 100, 0);
-        stroke(waveColor[0], waveColor[1], waveColor[2], alpha);
-        strokeWeight(2 - i * 0.5);
-
-        // Slit 1
-        line(barrierX - 8 + i, slit1Y - slitWidth / 2, barrierX + 8 - i, slit1Y - slitWidth / 2);
-        line(barrierX - 8 + i, slit1Y + slitWidth / 2, barrierX + 8 - i, slit1Y + slitWidth / 2);
-
-        // Slit 2
-        line(barrierX - 8 + i, slit2Y - slitWidth / 2, barrierX + 8 - i, slit2Y - slitWidth / 2);
-        line(barrierX - 8 + i, slit2Y + slitWidth / 2, barrierX + 8 - i, slit2Y + slitWidth / 2);
-    }
-}
-
-function drawInterferencePattern(slit1Y, slit2Y) {
-    // Draw circular waves emanating from each slit
+// Circular waves expanding downward from slits
+function drawCircularWaves(slit1X, slit2X, waveColor, simWavelength) {
+    push();
     noFill();
 
-    const maxRadius = screenX - barrierX + 100;
+    const maxRadius = screenY - barrierY + 50;
 
-    for (let r = 0; r < maxRadius; r += wavelength) {
+    for (let r = 0; r < maxRadius; r += simWavelength) {
         let radius = (r + time * 3) % maxRadius;
 
-        if (radius > 5) {
-            // Calculate alpha based on distance
-            let alpha = map(radius, 0, maxRadius, 120, 0);
-            alpha = constrain(alpha, 0, 120);
+        if (radius > 10) {
+            let alpha = map(radius, 0, maxRadius, 100, 0);
+            alpha = constrain(alpha, 0, 100);
 
             stroke(waveColor[0], waveColor[1], waveColor[2], alpha);
-            strokeWeight(2);
+            strokeWeight(1.5);
 
-            // Draw arcs from slit 1 (only the right half)
-            drawWaveArc(barrierX, slit1Y, radius);
-
-            // Draw arcs from slit 2 (only the right half)
-            drawWaveArc(barrierX, slit2Y, radius);
+            drawWaveArc(slit1X, barrierY + 15, radius);
+            drawWaveArc(slit2X, barrierY + 15, radius);
         }
     }
-
-    // Draw interference highlights
-    drawInterferenceHighlights(slit1Y, slit2Y);
+    pop();
 }
 
+// Draw wave arc expanding downward
 function drawWaveArc(x, y, radius) {
-    // Draw semi-circular wave from a slit
     beginShape();
-    for (let angle = -PI / 2; angle <= PI / 2; angle += 0.05) {
-        let px = x + cos(angle) * radius;
-        let py = y + sin(angle) * radius;
+    for (let angle = 0; angle <= PI; angle += 0.03) {
+        let px = x + cos(angle - HALF_PI) * radius;
+        let py = y + sin(angle - HALF_PI) * radius;
 
-        // Only draw if within bounds and past the barrier
-        if (px > barrierX + 10 && px < screenX && py > 20 && py < height - 20) {
+        if (py > y && py < screenY - 10 && px > 45 && px < simWidth - 45) {
             vertex(px, py);
         }
     }
     endShape();
 }
 
-function drawInterferenceHighlights(slit1Y, slit2Y) {
-    // Show constructive/destructive interference points
-    loadPixels();
+// Smooth interference using gradients (rotated)
+function drawSmoothInterference(slit1X, slit2X, waveColor, simWavelength) {
+    push();
+    noStroke();
 
-    const resolution = 4;
+    const resX = 4;
+    const resY = 4;
 
-    for (let x = barrierX + 30; x < screenX - 10; x += resolution) {
-        for (let y = 30; y < height - 30; y += resolution) {
-            // Calculate distances to each slit
-            let d1 = dist(x, y, barrierX, slit1Y);
-            let d2 = dist(x, y, barrierX, slit2Y);
+    for (let x = 50; x < simWidth - 50; x += resX) {
+        for (let y = barrierY + 30; y < screenY - 15; y += resY) {
+            let d1 = dist(x, y, slit1X, barrierY + 15);
+            let d2 = dist(x, y, slit2X, barrierY + 15);
 
-            // Path difference
-            let pathDiff = abs(d1 - d2);
+            let wave1 = sin(TWO_PI * (d1 / simWavelength - time * 0.3));
+            let wave2 = sin(TWO_PI * (d2 / simWavelength - time * 0.3));
+            let combined = (wave1 + wave2) / 2;
 
-            // Phase difference (normalized to wavelength)
-            let phaseDiff = (pathDiff % wavelength) / wavelength;
+            let intensity = (combined + 1) / 2;
 
-            // Wave amplitude at this point
-            let wave1 = sin(TWO_PI * (d1 / wavelength - time * 0.3));
-            let wave2 = sin(TWO_PI * (d2 / wavelength - time * 0.3));
-            let combinedAmplitude = (wave1 + wave2) / 2;
+            let distFade = map(y, barrierY + 30, screenY - 15, 0.2, 0.8);
+            let alpha = 40 * intensity * intensity * distFade;
 
-            // Color based on interference
-            let intensity = map(combinedAmplitude, -1, 1, 0, 1);
-
-            // Draw subtle interference field
-            let alpha = 30 * intensity * intensity;
-            let distFade = map(x, barrierX + 30, screenX - 10, 0.5, 1);
-            alpha *= distFade;
-
-            if (alpha > 5) {
-                noStroke();
-                if (combinedAmplitude > 0) {
-                    fill(colors.constructive[0], colors.constructive[1], colors.constructive[2], alpha);
-                } else {
-                    fill(colors.destructive[0], colors.destructive[1], colors.destructive[2], alpha * 0.5);
-                }
-                rect(x, y, resolution, resolution);
+            if (alpha > 2) {
+                fill(waveColor[0], waveColor[1], waveColor[2], alpha);
+                ellipse(x, y, resX * 1.5, resY * 1.5);
             }
         }
     }
+    pop();
 }
 
-function drawScreen() {
-    // Detection screen
-    fill(screenColor);
-    stroke(80, 80, 120);
-    strokeWeight(2);
-    rect(screenX - 5, 20, 10, height - 40, 3);
+// Horizontal barrier with slits
+function drawBarrier3D(slit1X, slit2X) {
+    push();
+    const wallThickness = 18;
+    const depth3D = 22;
+    const leftX = 40;
+    const rightX = simWidth - 40;
 
-    // Screen glow
-    for (let i = 0; i < 5; i++) {
-        noFill();
-        stroke(waveColor[0], waveColor[1], waveColor[2], 30 - i * 5);
-        strokeWeight(1);
-        rect(screenX - 5 - i, 20 - i, 10 + i * 2, height - 40 + i * 2, 3);
+    const frontCol = barrierColor;
+    const topCol = [barrierColor[0] + 30, barrierColor[1] + 30, barrierColor[2] + 30];
+    const sideCol = [barrierColor[0] - 15, barrierColor[1] - 15, barrierColor[2] - 15];
+
+    // Left section
+    drawHorizontalCuboidSection(leftX, barrierY, slit1X - slitWidth / 2 - leftX, wallThickness, depth3D, frontCol, topCol, sideCol);
+
+    // Middle section (between slits)
+    drawHorizontalCuboidSection(slit1X + slitWidth / 2, barrierY, slit2X - slitWidth / 2 - (slit1X + slitWidth / 2), wallThickness, depth3D, frontCol, topCol, sideCol);
+
+    // Right section
+    drawHorizontalCuboidSection(slit2X + slitWidth / 2, barrierY, rightX - (slit2X + slitWidth / 2), wallThickness, depth3D, frontCol, topCol, sideCol);
+
+    // Slit glow
+    const waveColor = wavelengthToColor(wavelength);
+    noFill();
+    for (let i = 0; i < 4; i++) {
+        let alpha = map(i, 0, 4, 220, 0);
+        stroke(waveColor[0], waveColor[1], waveColor[2], alpha);
+        strokeWeight(3 - i * 0.6);
+
+        // Slit 1
+        line(slit1X - slitWidth / 2 + 2, barrierY, slit1X + slitWidth / 2 - 2, barrierY);
+        line(slit1X - slitWidth / 2 + 2, barrierY + wallThickness, slit1X + slitWidth / 2 - 2, barrierY + wallThickness);
+
+        // Slit 2
+        line(slit2X - slitWidth / 2 + 2, barrierY, slit2X + slitWidth / 2 - 2, barrierY);
+        line(slit2X - slitWidth / 2 + 2, barrierY + wallThickness, slit2X + slitWidth / 2 - 2, barrierY + wallThickness);
     }
+    pop();
 }
 
-function drawIntensityGraph(slit1Y, slit2Y) {
-    // Draw intensity distribution on the screen
-    const graphX = screenX + 20;
-    const graphWidth = 100;
+// Draw horizontal cuboid section for barrier
+function drawHorizontalCuboidSection(x, y, w, h, d, frontCol, topCol, sideCol) {
+    if (w <= 0) return;
 
-    // Background for graph
-    fill(colors.bg[0], colors.bg[1], colors.bg[2], 230);
-    noStroke();
-    rect(graphX, 20, graphWidth, height - 40, 8);
-
-    // Graph border
-    stroke(waveColor[0], waveColor[1], waveColor[2], 100);
+    // Front face
+    fill(frontCol[0], frontCol[1], frontCol[2]);
+    stroke(frontCol[0] - 30, frontCol[1] - 30, frontCol[2] - 30);
     strokeWeight(1);
-    noFill();
-    rect(graphX, 20, graphWidth, height - 40, 8);
+    rect(x, y, w, h);
 
-    // Calculate and draw intensity
+    // Top face
+    fill(topCol[0], topCol[1], topCol[2]);
+    stroke(topCol[0] - 20, topCol[1] - 20, topCol[2] - 20);
     beginShape();
-    noFill();
-    stroke(waveColor[0], waveColor[1], waveColor[2]);
-    strokeWeight(2);
+    vertex(x, y);
+    vertex(x + w, y);
+    vertex(x + w + d * 0.5, y - d * 0.5);
+    vertex(x + d * 0.5, y - d * 0.5);
+    endShape(CLOSE);
 
-    for (let y = 30; y < height - 30; y += 2) {
-        // Calculate interference intensity at this point on the screen
-        let d1 = dist(screenX, y, barrierX, slit1Y);
-        let d2 = dist(screenX, y, barrierX, slit2Y);
+    // Right side face
+    fill(sideCol[0], sideCol[1], sideCol[2]);
+    stroke(sideCol[0] - 20, sideCol[1] - 20, sideCol[2] - 20);
+    beginShape();
+    vertex(x + w, y);
+    vertex(x + w + d * 0.5, y - d * 0.5);
+    vertex(x + w + d * 0.5, y + h - d * 0.5);
+    vertex(x + w, y + h);
+    endShape(CLOSE);
+}
 
+// Horizontal screen at bottom with smooth gradient intensity
+function drawScreen3D(slit1X, slit2X, waveColor, simWavelength) {
+    push();
+    const screenThickness = 15;
+    const depth3D = 25;
+    const leftX = 40;
+    const rightX = simWidth - 40;
+    const screenWidth = rightX - leftX;
+
+    const frontCol = screenColor;
+    const topCol = [screenColor[0] + 25, screenColor[1] + 25, screenColor[2] + 25];
+    const sideCol = [screenColor[0] - 10, screenColor[1] - 10, screenColor[2] - 10];
+
+    // Draw uniform screen base
+    fill(frontCol[0], frontCol[1], frontCol[2]);
+    stroke(frontCol[0] - 20, frontCol[1] - 20, frontCol[2] - 20);
+    strokeWeight(1);
+    rect(leftX, screenY, screenWidth, screenThickness);
+
+    // Overlay smooth intensity pattern using thin vertical strips
+    noStroke();
+    for (let x = leftX; x < rightX; x += 1) {
+        let posFromCenter = x - simWidth / 2;
+
+        let d1 = dist(x, screenY, slit1X, barrierY + 15);
+        let d2 = dist(x, screenY, slit2X, barrierY + 15);
         let pathDiff = d1 - d2;
-        let phase = TWO_PI * pathDiff / wavelength;
-
-        // Intensity is proportional to cos^2(phase/2)
+        let phase = TWO_PI * pathDiff / simWavelength;
         let intensity = pow(cos(phase / 2), 2);
 
-        // Add single slit diffraction envelope
-        let theta1 = atan2(y - slit1Y, screenX - barrierX);
-        let theta2 = atan2(y - slit2Y, screenX - barrierX);
-        let avgTheta = (theta1 + theta2) / 2;
-
-        let beta = PI * slitWidth * sin(avgTheta) / wavelength;
+        // Diffraction envelope
+        let theta = atan2(posFromCenter, screenY - barrierY);
+        let beta = PI * slitWidth * sin(theta) / simWavelength;
         let envelope = 1;
         if (abs(beta) > 0.01) {
             envelope = pow(sin(beta) / beta, 2);
         }
-
         intensity *= envelope;
+        intensity = constrain(intensity, 0, 1);
 
-        let graphValue = graphX + 10 + intensity * (graphWidth - 20);
-        vertex(graphValue, y);
+        // Blend colors
+        let r = lerp(frontCol[0], waveColor[0] + 100, intensity);
+        let g = lerp(frontCol[1], waveColor[1] + 100, intensity);
+        let b = lerp(frontCol[2], waveColor[2] + 100, intensity);
+        r = constrain(r, 0, 255);
+        g = constrain(g, 0, 255);
+        b = constrain(b, 0, 255);
+
+        fill(r, g, b);
+        rect(x, screenY, 1, screenThickness);
+    }
+
+    // Top face
+    fill(topCol[0], topCol[1], topCol[2]);
+    stroke(topCol[0] - 20, topCol[1] - 20, topCol[2] - 20);
+    strokeWeight(1);
+    beginShape();
+    vertex(leftX, screenY);
+    vertex(rightX, screenY);
+    vertex(rightX + depth3D * 0.5, screenY - depth3D * 0.5);
+    vertex(leftX + depth3D * 0.5, screenY - depth3D * 0.5);
+    endShape(CLOSE);
+
+    // Right side face
+    fill(sideCol[0], sideCol[1], sideCol[2]);
+    stroke(sideCol[0] - 20, sideCol[1] - 20, sideCol[2] - 20);
+    beginShape();
+    vertex(rightX, screenY);
+    vertex(rightX + depth3D * 0.5, screenY - depth3D * 0.5);
+    vertex(rightX + depth3D * 0.5, screenY + screenThickness - depth3D * 0.5);
+    vertex(rightX, screenY + screenThickness);
+    endShape(CLOSE);
+
+    // Border
+    noFill();
+    stroke(topCol[0], topCol[1], topCol[2]);
+    strokeWeight(1.5);
+    rect(leftX, screenY, screenWidth, screenThickness);
+
+    pop();
+}
+
+// Wave intensity graph on the right side (vertical)
+function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
+    push();
+
+    const graphLeft = graphX;
+    const graphRight = width - 40;
+    const graphTop = 60;
+    const graphBottom = height - 60;
+    const graphMidX = graphLeft + 60;
+
+    // Graph background
+    fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
+    stroke(barrierColor[0], barrierColor[1], barrierColor[2], 100);
+    strokeWeight(1);
+    rect(graphLeft - 10, graphTop - 20, graphRight - graphLeft + 20, graphBottom - graphTop + 40, 8);
+
+    // Axis
+    stroke(textColor[0], textColor[1], textColor[2], 150);
+    strokeWeight(1);
+    line(graphMidX, graphTop, graphMidX, graphBottom); // Y axis (position)
+    line(graphMidX, graphBottom, graphRight - 10, graphBottom); // X axis (intensity)
+
+    // Axis labels
+    fill(textColor[0], textColor[1], textColor[2]);
+    noStroke();
+    textSize(10);
+    textAlign(CENTER);
+    text("Intensity", (graphMidX + graphRight - 10) / 2, graphBottom + 25);
+
+    push();
+    translate(graphLeft + 20, (graphTop + graphBottom) / 2);
+    rotate(-HALF_PI);
+    textAlign(CENTER);
+    text("Position on Screen", 0, 0);
+    pop();
+
+    // Draw intensity curve (horizontal bars from axis)
+    noFill();
+    stroke(waveColor[0], waveColor[1], waveColor[2]);
+    strokeWeight(2.5);
+
+    beginShape();
+    for (let py = graphTop; py <= graphBottom; py += 2) {
+        // Map graph y to screen x position
+        let screenXPos = map(py, graphTop, graphBottom, 40, simWidth - 40);
+        let posFromCenter = screenXPos - simWidth / 2;
+
+        let d1 = dist(screenXPos, screenY, slit1X, barrierY + 15);
+        let d2 = dist(screenXPos, screenY, slit2X, barrierY + 15);
+        let pathDiff = d1 - d2;
+        let phase = TWO_PI * pathDiff / simWavelength;
+        let intensity = pow(cos(phase / 2), 2);
+
+        // Diffraction envelope
+        let theta = atan2(posFromCenter, screenY - barrierY);
+        let beta = PI * slitWidth * sin(theta) / simWavelength;
+        let envelope = 1;
+        if (abs(beta) > 0.01) {
+            envelope = pow(sin(beta) / beta, 2);
+        }
+        intensity *= envelope;
+        intensity = constrain(intensity, 0, 1);
+
+        let graphXVal = map(intensity, 0, 1, graphMidX + 5, graphRight - 20);
+        vertex(graphXVal, py);
     }
     endShape();
 
-    // Intensity label
-    drawLabelWithBox("Intensity", graphX + graphWidth / 2, height - 10);
+    // Graph title
+    textAlign(CENTER);
+    textSize(11);
+    fill(textColor[0], textColor[1], textColor[2]);
+    text("Interference Pattern", (graphLeft + graphRight) / 2, graphTop - 5);
 
-    // Draw intensity bars on screen
-    for (let y = 30; y < height - 30; y += 3) {
-        let d1 = dist(screenX, y, barrierX, slit1Y);
-        let d2 = dist(screenX, y, barrierX, slit2Y);
-
-        let pathDiff = d1 - d2;
-        let phase = TWO_PI * pathDiff / wavelength;
-        let intensity = pow(cos(phase / 2), 2);
-
-        // Add diffraction envelope
-        let theta = atan2(y - height / 2, screenX - barrierX);
-        let beta = PI * slitWidth * sin(theta) / wavelength;
-        let envelope = 1;
-        if (abs(beta) > 0.01) {
-            envelope = pow(sin(beta) / beta, 2);
-        }
-        intensity *= envelope;
-
-        // Draw on screen - grayscale based on intensity
-        let brightness = intensity * 255;
-        stroke(brightness, brightness, brightness, 220);
-        strokeWeight(3);
-        point(screenX, y);
-    }
+    pop();
 }
 
-function drawLabels(slit1Y, slit2Y) {
-    // Barrier label
-    drawLabelWithBox("Double Slit", barrierX, height - 10, {
-        arrowTo: { x: barrierX, y: height - 40 }
-    });
-
-    // Slit labels
-    drawLabelWithBox("Slit 1", barrierX + 40, slit1Y - 10, {
-        align: LEFT,
-        arrowTo: { x: barrierX + 8, y: slit1Y }
-    });
-
-    drawLabelWithBox("Slit 2", barrierX + 40, slit2Y + 15, {
-        align: LEFT,
-        arrowTo: { x: barrierX + 8, y: slit2Y }
-    });
-
-    // Screen label
-    drawLabelWithBox("Screen", screenX, height - 10, {
-        arrowTo: { x: screenX, y: height - 40 }
-    });
-
-    // Physics info (Standard text without box for cleaner look in corner)
+function drawLabels(waveColor) {
     push();
+
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(LEFT);
-    textSize(11); // Slightly larger for readability
-    text(`λ = ${wavelength}px`, 15, 25);
-    text(`d = ${slitSeparation}px`, 15, 40);
-    pop();
+    textSize(12);
+    text(`λ = ${wavelength} nm`, 25, 28);
 
-    // Equation
-    push();
+    // Color swatch
+    fill(waveColor[0], waveColor[1], waveColor[2]);
+    stroke(textColor[0], textColor[1], textColor[2]);
+    strokeWeight(1);
+    rect(110, 18, 14, 14, 2);
+
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
+    text(`d = ${slitSeparation} μm`, 25, 46);
+
     textAlign(RIGHT);
     textSize(12);
-    text("Δ = d·sin(θ) = nλ", screenX - 30, 25);
+    text("Δ = d·sin(θ) = nλ", simWidth - 25, 28);
     textSize(10);
-    text("(constructive interference)", screenX - 30, 40);
+    text("(constructive interference)", simWidth - 25, 46);
+
+    // Component labels
+    drawLabelWithBox("Source", simWidth / 2, 28);
+    drawLabelWithBox("Double Slit", simWidth / 2, barrierY + 36);
+    drawLabelWithBox("Screen", simWidth / 2, screenY + 35);
+
     pop();
 }
 
-// Helper to draw boxed labels with optional arrows
-function drawLabelWithBox(txt, x, y, options = {}) {
+function drawLabelWithBox(txt, x, y) {
     push();
 
-    // Settings
-    textSize(options.textSize || 11);
-    let padding = 6;
+    textSize(11);
+    let padding = 5;
     let boxW = textWidth(txt) + padding * 2;
-    let boxH = (options.textSize || 11) + padding * 2;
+    let boxH = 11 + padding * 2;
 
-    // Handle alignment for box position
-    let boxX = x;
-    if (options.align === LEFT) {
-        boxX = x + boxW / 2;
-    } else if (options.align === RIGHT) {
-        boxX = x - boxW / 2;
-    }
+    let boxX = constrain(x, boxW / 2 + 15, simWidth - boxW / 2 - 15);
 
-    // Draw Arrow if requested
-    if (options.arrowTo) {
-        stroke(labelBorderColor[0], labelBorderColor[1], labelBorderColor[2]);
-        strokeWeight(1);
-
-        // Calculate closest point on box to the target
-        let angle = atan2(options.arrowTo.y - y, options.arrowTo.x - boxX);
-        let startX = boxX + cos(angle) * boxW / 3; // Approx start point
-        let startY = y + sin(angle) * boxH / 3;
-
-        line(startX, startY, options.arrowTo.x, options.arrowTo.y);
-
-        // Arrowhead
-        push();
-        translate(options.arrowTo.x, options.arrowTo.y);
-        rotate(angle);
-        fill(labelBorderColor[0], labelBorderColor[1], labelBorderColor[2]);
-        triangle(0, 0, -5, -2, -5, 2);
-        pop();
-    }
-
-    // Draw Box
     fill(labelBgColor[0], labelBgColor[1], labelBgColor[2]);
     stroke(labelBorderColor[0], labelBorderColor[1], labelBorderColor[2]);
     strokeWeight(1);
     rectMode(CENTER);
-    rect(boxX, y, boxW, boxH, 4); // Rounded corners
+    rect(boxX, y, boxW, boxH, 4);
 
-    // Draw Text
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(CENTER, CENTER);
-    text(txt, boxX, y + 1); // Adjust for vertical centering
+    text(txt, boxX, y + 1);
 
     pop();
 }
 
-// Resize handling
-function windowResized() {
-    // Keep canvas at fixed size for consistent simulation
-}
+function windowResized() { }
