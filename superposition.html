@@ -5,43 +5,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Superposition Simulation - Quanim</title>
+    <meta name="description"
+        content="Interactive quantum superposition simulation. Explore how particles exist in multiple states simultaneously until measured.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f4f4f4;
-            --bg-tertiary: #e0e0e0;
-            --text-primary: #000000;
-            --text-secondary: #333333;
-            --text-muted: #666666;
-            --accent: #000000;
-            --accent-hover: #333333;
-            --border: #000000;
-            --border-hover: #333333;
-            --shadow: rgba(0, 0, 0, 0.1);
-            --shadow-strong: rgba(0, 0, 0, 0.2);
-            --value-color: #000000;
-            --label-bg: #ffffff;
-            --label-border: #000000;
+            --bg-primary: #fafbfc;
+            --bg-secondary: rgba(255, 255, 255, 0.8);
+            --bg-tertiary: rgba(255, 255, 255, 0.95);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --border: rgba(99, 102, 241, 0.2);
+            --border-hover: rgba(99, 102, 241, 0.4);
+            --shadow: rgba(99, 102, 241, 0.08);
+            --shadow-strong: rgba(99, 102, 241, 0.15);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --value-color: var(--accent-primary);
+            --gradient-start: #ddd6fe;
+            --gradient-end: #c4b5fd;
         }
 
         [data-theme="dark"] {
-            --bg-primary: #121212;
-            --bg-secondary: #1e1e1e;
-            --bg-tertiary: #2a2a2a;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --text-muted: #808080;
-            --accent: #ffffff;
-            --accent-hover: #cccccc;
-            --border: #555555;
-            --border-hover: #888888;
-            --shadow: rgba(0, 0, 0, 0.4);
-            --shadow-strong: rgba(0, 0, 0, 0.6);
-            --value-color: #ffffff;
-            --label-bg: #1e1e1e;
-            --label-border: #ffffff;
+            --bg-primary: #0f0f1a;
+            --bg-secondary: rgba(30, 30, 50, 0.8);
+            --bg-tertiary: rgba(40, 40, 65, 0.95);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #818cf8;
+            --accent-secondary: #a78bfa;
+            --border: rgba(139, 92, 246, 0.25);
+            --border-hover: rgba(139, 92, 246, 0.5);
+            --shadow: rgba(139, 92, 246, 0.1);
+            --shadow-strong: rgba(139, 92, 246, 0.2);
+            --glass-bg: rgba(30, 30, 50, 0.7);
+            --glass-border: rgba(60, 60, 100, 0.5);
+            --value-color: var(--accent-primary);
+            --gradient-start: #2e1065;
+            --gradient-end: #4c1d95;
         }
 
         * {
@@ -51,46 +57,50 @@
         }
 
         body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 24px;
             color: var(--text-primary);
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: all 0.4s ease;
         }
 
         .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 56px;
-            height: 32px;
-            border-radius: 16px;
+            width: 52px;
+            height: 28px;
+            border-radius: 14px;
             border: 2px solid var(--border);
-            background: var(--bg-primary);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             cursor: pointer;
             padding: 2px;
-            transition: background 0.3s ease, border-color 0.3s ease;
+            transition: all 0.3s ease;
             z-index: 100;
         }
 
         .theme-toggle:hover {
-            background: var(--bg-secondary);
+            border-color: var(--border-hover);
+            transform: scale(1.05);
         }
 
         .theme-toggle::before {
             content: '';
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: var(--text-primary);
-            left: 4px;
-            top: 4px;
-            transition: transform 0.3s ease, background 0.3s ease;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            left: 3px;
+            top: 3px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow-strong);
         }
 
         [data-theme="dark"] .theme-toggle::before {
@@ -99,23 +109,23 @@
 
         .theme-toggle .icon {
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             top: 50%;
             transform: translateY(-50%);
-            stroke: var(--text-primary);
+            stroke: var(--text-muted);
             fill: none;
             stroke-width: 1.5;
             transition: opacity 0.3s ease;
         }
 
         .theme-toggle .icon-sun {
-            left: 6px;
+            left: 5px;
             opacity: 1;
         }
 
         .theme-toggle .icon-moon {
-            right: 6px;
+            right: 5px;
             opacity: 0.4;
         }
 
@@ -131,48 +141,63 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            font-weight: 500;
             color: var(--text-muted);
             text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 10px 18px;
+            border-radius: 12px;
             border: 1px solid var(--border);
-            background: var(--bg-secondary);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .back-link:hover {
             color: var(--text-primary);
             border-color: var(--border-hover);
-            background: var(--bg-tertiary);
+            transform: translateX(-3px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            margin-top: 40px;
         }
 
         h1 {
-            font-weight: 600;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: clamp(1.5rem, 4vw, 2.25rem);
             color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
         }
 
         .subtitle {
-            font-weight: 300;
+            font-weight: 400;
             font-size: 1rem;
             color: var(--text-muted);
-            margin-bottom: 20px;
+            margin-top: 8px;
         }
 
         #canvas-container {
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 20px 60px var(--shadow-strong);
-            border: 1px solid var(--border);
+            box-shadow: 0 25px 80px var(--shadow-strong), 0 0 0 1px var(--border);
+            background: var(--bg-primary);
         }
 
         .controls {
             display: flex;
-            gap: 30px;
-            margin-top: 25px;
+            gap: 16px;
+            margin-top: 28px;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -181,32 +206,33 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            background: var(--bg-secondary);
-            padding: 15px 25px;
+            gap: 10px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 18px 24px;
             border-radius: 16px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--glass-border);
             box-shadow: 0 8px 32px var(--shadow);
             transition: all 0.3s ease;
         }
 
         .control-group:hover {
-            background: var(--bg-tertiary);
+            transform: translateY(-3px);
+            box-shadow: 0 16px 48px var(--shadow-strong);
             border-color: var(--border-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px var(--shadow-strong);
         }
 
         .control-group label {
-            font-weight: 400;
-            font-size: 0.85rem;
+            font-weight: 500;
+            font-size: 0.75rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
 
         .control-group input[type="range"] {
-            width: 150px;
+            width: 120px;
             height: 6px;
             -webkit-appearance: none;
             appearance: none;
@@ -215,39 +241,27 @@
             outline: none;
             border: none;
             cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .control-group input[type="range"]:hover {
-            background: var(--border-hover);
         }
 
         .control-group input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             cursor: pointer;
-            box-shadow: 0 2px 8px var(--shadow);
-            transition: all 0.2s ease;
-            margin-top: -6px;
-        }
-
-        .control-group input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-            background: var(--accent-hover);
+            box-shadow: 0 2px 10px var(--shadow-strong);
+            margin-top: -7px;
         }
 
         .control-group input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background: var(--accent);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             cursor: pointer;
             border: none;
-            box-shadow: 0 2px 8px var(--shadow);
         }
 
         .value-display {
@@ -257,76 +271,202 @@
         }
 
         .action-btn {
-            padding: 12px 30px;
-            font-size: 1rem;
+            padding: 14px 32px;
+            font-size: 0.95rem;
             font-weight: 600;
-            font-family: 'Outfit', sans-serif;
-            border: 2px solid var(--border);
-            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            border-radius: 14px;
             cursor: pointer;
             transition: all 0.3s ease;
-            background: var(--bg-primary);
+            background: var(--glass-bg);
             color: var(--text-primary);
-        }
-
-        .action-btn:hover {
-            background: var(--text-primary);
-            color: var(--bg-primary);
-            transform: translateY(-2px);
-        }
-
-        .action-btn.primary {
-            background: var(--text-primary);
-            color: var(--bg-primary);
-        }
-
-        .action-btn.primary:hover {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-        }
-
-        .info-panel {
-            margin-top: 25px;
-            max-width: 800px;
-            text-align: center;
-            padding: 20px 30px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
             border: 1px solid var(--border);
         }
 
-        .info-panel p {
-            font-size: 0.9rem;
-            line-height: 1.6;
-            color: var(--text-secondary);
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow-strong);
         }
 
-        .info-panel strong {
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px var(--shadow-strong);
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px var(--shadow-strong);
+        }
+
+        .info-panel {
+            margin-top: 32px;
+            max-width: 900px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 12px 40px var(--shadow);
+            overflow: hidden;
+        }
+
+        .info-header {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            padding: 20px 28px;
+            color: white;
+        }
+
+        .info-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .info-header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .info-content {
+            padding: 28px;
+        }
+
+        .info-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
             color: var(--text-primary);
+            margin-bottom: 12px;
+            margin-top: 20px;
+        }
+
+        .info-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .info-content p {
+            font-size: 0.925rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .info-content strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .info-content .highlight {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .equation-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            text-align: center;
+            margin: 16px 0;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .equation-box .equation {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+
+        .equation-box .description {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .concept-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .concept-card .icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .concept-card h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .concept-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 1024px) {
+            #canvas-container {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #canvas-container canvas {
+                min-width: 800px;
+            }
         }
 
         @media screen and (max-width: 768px) {
             body {
-                padding: 15px 10px;
+                padding: 16px;
             }
 
-            h1 {
-                font-size: 1.8rem;
-                text-align: center;
+            .header {
+                margin-top: 50px;
             }
 
             .controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 15px;
-                width: 100%;
-                max-width: 500px;
+                gap: 12px;
             }
 
             .control-group {
-                flex-direction: row;
-                justify-content: space-between;
-                width: 100%;
+                flex: 1;
+                min-width: 130px;
+            }
+
+            .info-panel {
+                margin: 24px 8px;
+            }
+
+            .concept-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .back-link {
+                padding: 8px 14px;
+                font-size: 0.8rem;
+            }
+
+            h1 {
+                font-size: 1.25rem;
             }
         }
     </style>
@@ -344,10 +484,18 @@
         </svg>
     </button>
 
-    <a href="index.html" class="back-link">← Back to Home</a>
+    <a href="index.html" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+        </svg>
+        Back to Home
+    </a>
 
-    <h1>⚛️ Quantum Superposition</h1>
-    <p class="subtitle">A particle exists in multiple states until observed</p>
+    <div class="header">
+        <h1>⚛️ Quantum Superposition</h1>
+        <p class="subtitle">A particle exists in multiple states until observed</p>
+    </div>
 
     <div id="canvas-container"></div>
 
@@ -366,10 +514,63 @@
     </div>
 
     <div class="info-panel">
-        <p>In quantum mechanics, a particle can exist in a <strong>superposition</strong> of multiple states
-            simultaneously.
-            The particle is described by a wavefunction |ψ⟩ = α|↑⟩ + β|↓⟩, where α and β are probability amplitudes.
-            When we <strong>measure</strong> the particle, the wavefunction "collapses" to a single definite state.</p>
+        <div class="info-header">
+            <h2>Understanding Quantum Superposition</h2>
+            <p>The particle is both here and there — until you look</p>
+        </div>
+
+        <div class="info-content">
+            <h3>🐱 Schrödinger's Cat</h3>
+            <p>
+                In 1935, physicist <strong>Erwin Schrödinger</strong> proposed his famous thought experiment to
+                illustrate the strangeness of quantum superposition. Imagine a cat in a sealed box with a radioactive
+                atom that has a 50% chance of decaying. If it decays, poison is released, killing the cat. According
+                to quantum mechanics, until we open the box and look, the atom exists in a <span
+                    class="highlight">superposition
+                    of decayed and not-decayed</span> — and so, absurdly, the cat is simultaneously alive AND dead!
+            </p>
+
+            <div class="equation-box">
+                <div class="equation">|ψ⟩ = α|↑⟩ + β|↓⟩</div>
+                <div class="description">The quantum state is a superposition of spin-up and spin-down, where |α|² and
+                    |β|² are the measurement probabilities</div>
+            </div>
+
+            <h3>📊 What the Math Means</h3>
+            <p>
+                In this simulation, |↑⟩ represents "spin up" and |↓⟩ represents "spin down." The coefficients α and β
+                are <strong>probability amplitudes</strong> — complex numbers whose squared magnitudes give the
+                probability of measuring each state. When you adjust the slider, you're changing the value of |α|².
+                The particle genuinely exists in <em>both states at once</em> until measurement forces it to "choose."
+            </p>
+
+            <div class="concept-grid">
+                <div class="concept-card">
+                    <div class="icon">🌀</div>
+                    <h4>Superposition</h4>
+                    <p>Particle in multiple states simultaneously</p>
+                </div>
+                <div class="concept-card">
+                    <div class="icon">📍</div>
+                    <h4>Measurement</h4>
+                    <p>Forces collapse to a single definite state</p>
+                </div>
+                <div class="concept-card">
+                    <div class="icon">🎲</div>
+                    <h4>Probability</h4>
+                    <p>Only probabilities are predictable, not outcomes</p>
+                </div>
+            </div>
+
+            <h3>🧠 Interpretations</h3>
+            <p>
+                The <strong>Copenhagen interpretation</strong> says the wavefunction is a complete description of
+                reality, and measurement causes it to "collapse." The <strong>Many-Worlds interpretation</strong>
+                suggests the universe actually splits — in one branch you measure spin up, in another spin down, and
+                both yous continue existing! Neither interpretation has been proven definitively correct, which is what
+                makes quantum mechanics so philosophically fascinating.
+            </p>
+        </div>
     </div>
 
     <script src="superposition.js"></script>

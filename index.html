@@ -4,41 +4,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quanim - Quantum Physics Visualizations</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Quanim - Interactive Quantum Physics Visualizations</title>
+    <meta name="description"
+        content="Explore the quantum world through stunning interactive simulations. Experience wave-particle duality, superposition, and entanglement like never before.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #ffffff;
-            --bg-secondary: #f4f4f4;
-            --bg-tertiary: #e0e0e0;
-            --text-primary: #000000;
-            --text-secondary: #333333;
-            --text-muted: #666666;
-            --accent: #000000;
-            --accent-hover: #333333;
-            --border: #000000;
-            --border-hover: #333333;
-            --shadow: rgba(0, 0, 0, 0.1);
-            --shadow-strong: rgba(0, 0, 0, 0.2);
-            --gradient-start: #e3f2fd;
-            --gradient-end: #bbdefb;
+            --bg-primary: #fafbfc;
+            --bg-secondary: rgba(255, 255, 255, 0.7);
+            --bg-tertiary: rgba(255, 255, 255, 0.9);
+            --text-primary: #0f172a;
+            --text-secondary: #334155;
+            --text-muted: #64748b;
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-tertiary: #a855f7;
+            --border: rgba(99, 102, 241, 0.2);
+            --border-hover: rgba(99, 102, 241, 0.4);
+            --shadow: rgba(99, 102, 241, 0.08);
+            --shadow-strong: rgba(99, 102, 241, 0.15);
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --gradient-hero-1: #e0e7ff;
+            --gradient-hero-2: #c7d2fe;
+            --gradient-hero-3: #ddd6fe;
+            --particle-color: rgba(99, 102, 241, 0.4);
         }
 
         [data-theme="dark"] {
-            --bg-primary: #121212;
-            --bg-secondary: #1e1e1e;
-            --bg-tertiary: #2a2a2a;
-            --text-primary: #e0e0e0;
-            --text-secondary: #b0b0b0;
-            --text-muted: #808080;
-            --accent: #ffffff;
-            --accent-hover: #cccccc;
-            --border: #555555;
-            --border-hover: #888888;
-            --shadow: rgba(0, 0, 0, 0.4);
-            --shadow-strong: rgba(0, 0, 0, 0.6);
-            --gradient-start: #1a1a2e;
-            --gradient-end: #16213e;
+            --bg-primary: #0f0f1a;
+            --bg-secondary: rgba(30, 30, 50, 0.7);
+            --bg-tertiary: rgba(40, 40, 65, 0.9);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #818cf8;
+            --accent-secondary: #a78bfa;
+            --accent-tertiary: #c084fc;
+            --border: rgba(139, 92, 246, 0.25);
+            --border-hover: rgba(139, 92, 246, 0.5);
+            --shadow: rgba(139, 92, 246, 0.1);
+            --shadow-strong: rgba(139, 92, 246, 0.2);
+            --glass-bg: rgba(30, 30, 50, 0.6);
+            --glass-border: rgba(60, 60, 100, 0.5);
+            --gradient-hero-1: #1e1b4b;
+            --gradient-hero-2: #312e81;
+            --gradient-hero-3: #3b0764;
+            --particle-color: rgba(139, 92, 246, 0.5);
         }
 
         * {
@@ -47,45 +60,53 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+        }
+
         body {
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary);
             min-height: 100vh;
             color: var(--text-primary);
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.5s ease, color 0.5s ease;
             overflow-x: hidden;
         }
 
         /* Theme Toggle */
         .theme-toggle {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 56px;
-            height: 32px;
-            border-radius: 16px;
+            top: 24px;
+            right: 24px;
+            width: 52px;
+            height: 28px;
+            border-radius: 14px;
             border: 2px solid var(--border);
-            background: var(--bg-primary);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             cursor: pointer;
             padding: 2px;
-            transition: background 0.3s ease, border-color 0.3s ease;
-            z-index: 100;
+            transition: all 0.3s ease;
+            z-index: 1000;
         }
 
         .theme-toggle:hover {
-            background: var(--bg-secondary);
+            border-color: var(--border-hover);
+            transform: scale(1.05);
         }
 
         .theme-toggle::before {
             content: '';
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
-            background: var(--text-primary);
-            left: 4px;
-            top: 4px;
-            transition: transform 0.3s ease, background 0.3s ease;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            left: 3px;
+            top: 3px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 8px var(--shadow-strong);
         }
 
         [data-theme="dark"] .theme-toggle::before {
@@ -94,23 +115,23 @@
 
         .theme-toggle .icon {
             position: absolute;
-            width: 16px;
-            height: 16px;
+            width: 14px;
+            height: 14px;
             top: 50%;
             transform: translateY(-50%);
-            stroke: var(--text-primary);
+            stroke: var(--text-muted);
             fill: none;
             stroke-width: 1.5;
             transition: opacity 0.3s ease;
         }
 
         .theme-toggle .icon-sun {
-            left: 6px;
+            left: 5px;
             opacity: 1;
         }
 
         .theme-toggle .icon-moon {
-            right: 6px;
+            right: 5px;
             opacity: 0.4;
         }
 
@@ -122,6 +143,59 @@
             opacity: 1;
         }
 
+        /* Animated Particles Background */
+        .particles-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: var(--particle-color);
+            border-radius: 50%;
+            animation: float-particle 15s infinite ease-in-out;
+        }
+
+        .particle::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            border-radius: 50%;
+            filter: blur(3px);
+            opacity: 0.6;
+        }
+
+        @keyframes float-particle {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            50% {
+                transform: translate(var(--tx), var(--ty)) scale(1.2);
+                opacity: 0.8;
+            }
+
+            90% {
+                opacity: 1;
+            }
+        }
+
         /* Hero Section */
         .hero {
             min-height: 100vh;
@@ -130,54 +204,84 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 40px 20px;
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            padding: 60px 24px;
+            background: linear-gradient(135deg, var(--gradient-hero-1) 0%, var(--gradient-hero-2) 50%, var(--gradient-hero-3) 100%);
             position: relative;
+            overflow: hidden;
         }
 
         .hero::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 30% 20%, rgba(100, 100, 255, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(255, 100, 100, 0.06) 0%, transparent 50%);
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 70% 70%, rgba(168, 85, 247, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            animation: aurora 20s ease-in-out infinite alternate;
             pointer-events: none;
+        }
+
+        @keyframes aurora {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-5%, -5%) rotate(3deg);
+            }
         }
 
         .hero-content {
             position: relative;
             z-index: 1;
-            max-width: 900px;
+            max-width: 1000px;
         }
 
         .logo {
-            font-size: 5rem;
-            font-weight: 700;
-            letter-spacing: -2px;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-muted) 100%);
+            font-size: clamp(3.5rem, 10vw, 6rem);
+            font-weight: 800;
+            letter-spacing: -3px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 50%, var(--accent-tertiary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation: fadeInUp 0.8s ease;
+            animation: glow-pulse 3s ease-in-out infinite alternate;
+            text-shadow: 0 0 60px var(--shadow-strong);
+        }
+
+        @keyframes glow-pulse {
+            0% {
+                filter: drop-shadow(0 0 20px var(--shadow));
+            }
+
+            100% {
+                filter: drop-shadow(0 0 40px var(--shadow-strong));
+            }
         }
 
         .tagline {
-            font-size: 1.5rem;
-            font-weight: 300;
+            font-size: clamp(1.2rem, 3vw, 1.75rem);
+            font-weight: 400;
             color: var(--text-secondary);
-            margin-bottom: 30px;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
             animation: fadeInUp 0.8s ease 0.1s both;
         }
 
+        .tagline span {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
         .hero-description {
-            font-size: 1.1rem;
-            line-height: 1.8;
+            font-size: clamp(1rem, 2vw, 1.15rem);
+            line-height: 1.9;
             color: var(--text-muted);
-            margin-bottom: 50px;
+            margin-bottom: 48px;
             max-width: 700px;
             margin-left: auto;
             margin-right: auto;
@@ -187,68 +291,91 @@
         /* Simulation Cards */
         .simulation-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            max-width: 1000px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1100px;
             margin: 0 auto;
             animation: fadeInUp 0.8s ease 0.3s both;
         }
 
         .sim-card {
-            background: var(--bg-secondary);
-            border: 2px solid var(--border);
-            border-radius: 20px;
-            padding: 30px 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 32px 28px;
             text-decoration: none;
             color: inherit;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sim-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .sim-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 50px var(--shadow-strong);
-            border-color: var(--border-hover);
-            background: var(--bg-tertiary);
+            box-shadow: 0 25px 60px var(--shadow-strong), 0 0 0 1px var(--border-hover);
+            border-color: transparent;
+        }
+
+        .sim-card:hover::before {
+            opacity: 1;
         }
 
         .sim-card-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 4px 12px var(--shadow));
         }
 
         .sim-card-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            margin-bottom: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 12px;
             color: var(--text-primary);
         }
 
         .sim-card-description {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 20px;
+            line-height: 1.7;
+            margin-bottom: 24px;
+            flex-grow: 1;
         }
 
         .sim-card-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 24px;
+            padding: 12px 28px;
             font-size: 0.9rem;
             font-weight: 600;
-            color: var(--bg-primary);
-            background: var(--text-primary);
-            border-radius: 25px;
+            color: white;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50px;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--shadow);
         }
 
         .sim-card:hover .sim-card-btn {
-            background: var(--accent-hover);
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px var(--shadow-strong);
         }
 
         .sim-card-btn svg {
@@ -261,91 +388,275 @@
             transform: translateX(4px);
         }
 
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            animation: bounce 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        .scroll-indicator span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .scroll-indicator svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--text-muted);
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0);
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(10px);
+            }
+        }
+
         /* Features Section */
         .features {
-            padding: 100px 20px;
+            padding: 120px 24px;
             background: var(--bg-primary);
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 16px;
+            display: block;
         }
 
         .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 60px;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
             color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
         }
 
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
         .feature-card {
             background: var(--bg-secondary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 35px 25px;
+            padding: 40px 32px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
         }
 
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px var(--shadow-strong);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 50px var(--shadow-strong);
             border-color: var(--border-hover);
         }
 
         .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 8px 24px var(--shadow);
         }
 
         .feature-title {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             color: var(--text-primary);
         }
 
         .feature-description {
-            font-size: 0.9rem;
-            line-height: 1.6;
+            font-size: 0.95rem;
+            line-height: 1.7;
             color: var(--text-muted);
         }
 
         /* About Section */
         .about {
-            padding: 100px 20px;
-            background: var(--bg-secondary);
+            padding: 120px 24px;
+            background: linear-gradient(180deg, var(--bg-primary) 0%, var(--gradient-hero-1) 100%);
         }
 
         .about-content {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            text-align: center;
         }
 
-        .about-text {
-            font-size: 1.05rem;
-            line-height: 1.9;
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 48px;
+            margin-top: 48px;
+        }
+
+        .about-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 32px;
+        }
+
+        .about-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .about-card p {
+            font-size: 0.95rem;
+            line-height: 1.8;
             color: var(--text-secondary);
-            margin-bottom: 30px;
+        }
+
+        /* CTA Section */
+        .cta {
+            padding: 100px 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), var(--accent-tertiary));
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta h2 {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 700;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .cta p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            max-width: 500px;
+            margin: 0 auto 32px;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent-primary);
+            background: white;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
         }
 
         /* Footer */
         .footer {
-            padding: 40px 20px;
+            padding: 60px 24px 40px;
             text-align: center;
             background: var(--bg-primary);
             border-top: 1px solid var(--border);
         }
 
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+        }
+
         .footer-text {
             font-size: 0.9rem;
             color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-primary);
         }
 
         /* Animations */
@@ -363,44 +674,63 @@
 
         /* Responsive */
         @media screen and (max-width: 768px) {
-            .logo {
-                font-size: 3.5rem;
-            }
-
-            .tagline {
-                font-size: 1.2rem;
-            }
-
-            .hero-description {
-                font-size: 1rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
+            .hero {
+                padding: 80px 20px 60px;
             }
 
             .simulation-cards {
                 grid-template-columns: 1fr;
-                padding: 0 10px;
+                padding: 0 8px;
             }
 
             .sim-card {
-                padding: 25px 20px;
+                padding: 28px 24px;
+            }
+
+            .features,
+            .about {
+                padding: 80px 20px;
+            }
+
+            .features-grid {
+                gap: 20px;
+            }
+
+            .feature-card {
+                padding: 32px 24px;
+            }
+
+            .scroll-indicator {
+                display: none;
+            }
+
+            .cta {
+                padding: 60px 20px;
+            }
+
+            .about-grid {
+                gap: 24px;
             }
         }
 
         @media screen and (max-width: 480px) {
             .logo {
-                font-size: 2.8rem;
-            }
-
-            .tagline {
-                font-size: 1rem;
+                letter-spacing: -1px;
             }
 
             .theme-toggle {
-                top: 15px;
-                right: 15px;
+                top: 16px;
+                right: 16px;
+            }
+
+            .sim-card-icon {
+                font-size: 2.8rem;
+            }
+
+            .feature-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
             }
         }
     </style>
@@ -419,13 +749,15 @@
     </button>
 
     <section class="hero">
+        <div class="particles-container" id="particles"></div>
+
         <div class="hero-content">
             <h1 class="logo">Quanim</h1>
-            <p class="tagline">Quantum Physics, Animated</p>
+            <p class="tagline">Quantum Physics, <span>Animated</span></p>
             <p class="hero-description">
-                Explore the strange and beautiful world of quantum mechanics through interactive simulations.
-                Experience wave-particle duality, superposition, and entanglement — the phenomena that define
-                reality at its smallest scales.
+                Step into the strange and beautiful realm of quantum mechanics through stunning interactive simulations.
+                Experience wave-particle duality, superposition, and entanglement — the fundamental phenomena that
+                challenge our understanding of reality and power the technologies of tomorrow.
             </p>
 
             <div class="simulation-cards">
@@ -433,11 +765,12 @@
                     <div class="sim-card-icon">🌊</div>
                     <h3 class="sim-card-title">Double-Slit Experiment</h3>
                     <p class="sim-card-description">
-                        Watch waves pass through slits and create interference patterns, revealing the wave nature of
-                        light and matter.
+                        Discover how light and matter behave as both waves and particles. Watch as waves pass through
+                        two slits to create mesmerizing interference patterns — the experiment that revolutionized
+                        physics and revealed the quantum nature of reality.
                     </p>
                     <span class="sim-card-btn">
-                        Explore
+                        Explore Simulation
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />
@@ -449,11 +782,12 @@
                     <div class="sim-card-icon">⚛️</div>
                     <h3 class="sim-card-title">Quantum Superposition</h3>
                     <p class="sim-card-description">
-                        See a particle exist in multiple states simultaneously until measurement collapses the
-                        wavefunction.
+                        Explore Schrödinger's famous thought experiment in action. See a quantum particle exist in
+                        multiple states simultaneously until the moment of measurement — when the wavefunction
+                        collapses and reality crystallizes into a single outcome.
                     </p>
                     <span class="sim-card-btn">
-                        Explore
+                        Explore Simulation
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />
@@ -465,11 +799,12 @@
                     <div class="sim-card-icon">🔗</div>
                     <h3 class="sim-card-title">Quantum Entanglement</h3>
                     <p class="sim-card-description">
-                        Experience "spooky action at a distance" as measuring one particle instantly affects its
-                        entangled partner.
+                        Witness Einstein's "spooky action at a distance" firsthand. Create entangled particle pairs
+                        and observe how measuring one particle instantaneously determines the state of its partner —
+                        no matter how far apart they are.
                     </p>
                     <span class="sim-card-btn">
-                        Explore
+                        Explore Simulation
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
                             <path d="M5 12h14M12 5l7 7-7 7" />
@@ -478,30 +813,50 @@
                 </a>
             </div>
         </div>
+
+        <div class="scroll-indicator"
+            onclick="document.querySelector('.features').scrollIntoView({behavior: 'smooth'})">
+            <span>Discover More</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6" />
+            </svg>
+        </div>
     </section>
 
     <section class="features">
-        <h2 class="section-title">Why Quanim?</h2>
+        <div class="section-header">
+            <span class="section-label">Why Choose Quanim?</span>
+            <h2 class="section-title">Learn Physics Through Experience</h2>
+            <p class="section-subtitle">
+                We believe the best way to understand quantum mechanics is to see it in action.
+                Our simulations make abstract concepts tangible and intuitive.
+            </p>
+        </div>
+
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">�</div>
-                <h3 class="feature-title">Interactive Learning</h3>
+                <div class="feature-icon">🎮</div>
+                <h3 class="feature-title">Truly Interactive</h3>
                 <p class="feature-description">
-                    Adjust parameters in real-time and instantly see how they affect quantum phenomena.
+                    Adjust wavelengths, probabilities, and distances in real-time. Every parameter change
+                    instantly updates the visualization, helping you build deep intuition for quantum behavior.
                 </p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🎨</div>
-                <h3 class="feature-title">Beautiful Visualizations</h3>
+                <div class="feature-icon">✨</div>
+                <h3 class="feature-title">Stunning Visuals</h3>
                 <p class="feature-description">
-                    Stunning animations bring abstract quantum concepts to life with clarity and elegance.
+                    Beautiful, physics-accurate animations bring abstract quantum concepts to life.
+                    Watch wave interference, probability clouds, and entanglement unfold before your eyes.
                 </p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">📊</div>
+                <div class="feature-icon">📐</div>
                 <h3 class="feature-title">Real Physics</h3>
                 <p class="feature-description">
-                    Based on actual quantum mechanics equations, not simplified approximations.
+                    Built on actual quantum mechanics equations — not simplified approximations.
+                    See the real math behind wave interference, probability amplitudes, and spin correlations.
                 </p>
             </div>
             <div class="feature-card">
@@ -509,6 +864,7 @@
                 <h3 class="feature-title">Dark Mode</h3>
                 <p class="feature-description">
                     Easy on the eyes with a beautiful dark theme for late-night quantum exploration.
+                    Switch seamlessly between light and dark modes on any page.
                 </p>
             </div>
         </div>
@@ -516,25 +872,58 @@
 
     <section class="about">
         <div class="about-content">
-            <h2 class="section-title">About Quanim</h2>
-            <p class="about-text">
-                Quanim brings the counterintuitive world of quantum mechanics to your screen. From the famous
-                double-slit experiment that puzzled physicists for centuries, to the mind-bending phenomena
-                of superposition and entanglement — these simulations help you develop an intuition for
-                how nature really works at its most fundamental level.
-            </p>
-            <p class="about-text">
-                Whether you're a student, educator, or simply curious about the quantum world, Quanim provides
-                a hands-on way to explore concepts that even Einstein found troubling. Ready to question reality?
-            </p>
+            <div class="section-header">
+                <span class="section-label">About Quanim</span>
+                <h2 class="section-title">Making the Quantum World Accessible</h2>
+            </div>
+
+            <div class="about-grid">
+                <div class="about-card">
+                    <h3>🎓 For Learners</h3>
+                    <p>
+                        Whether you're a curious student or a lifelong learner, Quanim helps you develop intuition
+                        for quantum phenomena that even Einstein found troubling. Explore at your own pace and
+                        discover why reality at the smallest scales is stranger than fiction.
+                    </p>
+                </div>
+                <div class="about-card">
+                    <h3>👨‍🏫 For Educators</h3>
+                    <p>
+                        Bring quantum mechanics to life in your classroom. Our interactive simulations provide
+                        the perfect complement to lectures, allowing students to experiment with concepts that
+                        are impossible to demonstrate with traditional equipment.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="cta-content">
+            <h2>Ready to Question Reality?</h2>
+            <p>Begin your journey into the quantum realm with our interactive simulations.</p>
+            <a href="double-slit.html" class="cta-btn">
+                Start Exploring
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </a>
         </div>
     </section>
 
     <footer class="footer">
+        <div class="footer-logo">Quanim</div>
         <p class="footer-text">© 2026 Quanim. Exploring the quantum world, one wave at a time.</p>
+        <div class="footer-links">
+            <a href="double-slit.html" class="footer-link">Double-Slit</a>
+            <a href="superposition.html" class="footer-link">Superposition</a>
+            <a href="entanglement.html" class="footer-link">Entanglement</a>
+        </div>
     </footer>
 
     <script>
+        // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
 
@@ -553,6 +942,40 @@
                 localStorage.setItem('theme', 'dark');
             }
         });
+
+        // Create floating particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+
+                // Random starting position
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+
+                // Random movement direction
+                const tx = (Math.random() - 0.5) * 200;
+                const ty = (Math.random() - 0.5) * 200;
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+
+                // Random animation delay and duration
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = 10 + Math.random() * 10 + 's';
+
+                // Random size
+                const size = 3 + Math.random() * 5;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+
+                container.appendChild(particle);
+            }
+        }
+
+        createParticles();
     </script>
 </body>
 

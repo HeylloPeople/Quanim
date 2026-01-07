@@ -19,12 +19,25 @@ let graphX = simWidth + 30;
 let scaleFactor = 1;
 
 function calculateDimensions() {
-    const maxWidth = Math.min(window.innerWidth - 40, 1100);
+    // Maintain minimum canvas size for horizontal layout
+    const minWidth = 900;
+    const idealWidth = 1100;
+    const containerWidth = window.innerWidth - 40;
 
-    // Always use proportional scaling
-    scaleFactor = maxWidth / 1100;
-    canvasWidth = maxWidth;
-    canvasHeight = Math.max(Math.floor(550 * scaleFactor), 350);
+    // Use ideal width on larger screens, maintain minimum on smaller screens
+    if (containerWidth >= idealWidth) {
+        canvasWidth = idealWidth;
+        scaleFactor = 1;
+    } else if (containerWidth >= minWidth) {
+        canvasWidth = containerWidth;
+        scaleFactor = containerWidth / idealWidth;
+    } else {
+        // On very small screens, maintain minimum width (will scroll horizontally)
+        canvasWidth = minWidth;
+        scaleFactor = minWidth / idealWidth;
+    }
+
+    canvasHeight = Math.floor(550 * scaleFactor);
     simWidth = Math.floor(700 * scaleFactor);
     graphWidth = Math.floor(350 * scaleFactor);
     graphX = simWidth + Math.floor(30 * scaleFactor);
