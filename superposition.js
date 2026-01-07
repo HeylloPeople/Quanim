@@ -1,5 +1,6 @@
 // Quantum Superposition Simulation
 // Visualizes a particle in superposition of states until measured
+// With proper scaling for responsive design
 
 let isMeasured = false;
 let measuredState = 0; // 0 = spin up, 1 = spin down
@@ -10,39 +11,42 @@ let time = 0;
 let probUp = 0.5;
 let probDown = 0.5;
 
-// Canvas dimensions - will be set dynamically
-let canvasWidth = 1100;
-let canvasHeight = 550;
+// Canvas dimensions - base dimensions at scale 1.0
+const BASE_WIDTH = 1100;
+const BASE_HEIGHT = 550;
+const BASE_SIM_WIDTH = 700;
+const BASE_GRAPH_WIDTH = 350;
 
-// Layout
-let simWidth = 700;
-let graphWidth = 350;
+// Actual canvas dimensions (scaled)
+let canvasWidth = BASE_WIDTH;
+let canvasHeight = BASE_HEIGHT;
+let simWidth = BASE_SIM_WIDTH;
+let graphWidth = BASE_GRAPH_WIDTH;
 let graphX = simWidth + 30;
 let scaleFactor = 1;
 
 function calculateDimensions() {
-    // Maintain minimum canvas size for horizontal layout
-    const minWidth = 900;
-    const idealWidth = 1100;
     const containerWidth = window.innerWidth - 40;
 
-    // Use ideal width on larger screens, maintain minimum on smaller screens
-    if (containerWidth >= idealWidth) {
-        canvasWidth = idealWidth;
+    // Calculate scale factor based on available width
+    if (containerWidth >= BASE_WIDTH) {
         scaleFactor = 1;
-    } else if (containerWidth >= minWidth) {
-        canvasWidth = containerWidth;
-        scaleFactor = containerWidth / idealWidth;
     } else {
-        // On very small screens, maintain minimum width (will scroll horizontally)
-        canvasWidth = minWidth;
-        scaleFactor = minWidth / idealWidth;
+        // Scale down proportionally, with a minimum scale
+        scaleFactor = Math.max(containerWidth / BASE_WIDTH, 0.5);
     }
 
-    canvasHeight = Math.floor(550 * scaleFactor);
-    simWidth = Math.floor(700 * scaleFactor);
-    graphWidth = Math.floor(350 * scaleFactor);
+    // Apply scaling to all dimensions
+    canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
+    canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+    simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+    graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
     graphX = simWidth + Math.floor(30 * scaleFactor);
+}
+
+// Helper function to scale values
+function s(value) {
+    return value * scaleFactor;
 }
 
 // Colors
@@ -162,9 +166,9 @@ function drawSuperpositionState(cx, cy) {
     const pulseDown = sin(time * 2 + PI) * 0.15 + 1;
 
     // Spin up cloud (blue) - offset upward
-    const upY = cy - 60;
-    const upSize = 120 * probUp * pulseUp;
-    for (let r = upSize; r > 0; r -= 8) {
+    const upY = cy - s(60);
+    const upSize = s(120) * probUp * pulseUp;
+    for (let r = upSize; r > 0; r -= s(8)) {
         let alpha = map(r, 0, upSize, 180, 0) * probUp;
         fill(colors.stateUp[0], colors.stateUp[1], colors.stateUp[2], alpha);
         noStroke();
@@ -172,9 +176,9 @@ function drawSuperpositionState(cx, cy) {
     }
 
     // Spin down cloud (orange) - offset downward
-    const downY = cy + 60;
-    const downSize = 120 * probDown * pulseDown;
-    for (let r = downSize; r > 0; r -= 8) {
+    const downY = cy + s(60);
+    const downSize = s(120) * probDown * pulseDown;
+    for (let r = downSize; r > 0; r -= s(8)) {
         let alpha = map(r, 0, downSize, 180, 0) * probDown;
         fill(colors.stateDown[0], colors.stateDown[1], colors.stateDown[2], alpha);
         noStroke();
@@ -187,8 +191,8 @@ function drawSuperpositionState(cx, cy) {
     let coreG = lerp(colors.stateUp[1], colors.stateDown[1], blendFactor);
     let coreB = lerp(colors.stateUp[2], colors.stateDown[2], blendFactor);
 
-    for (let r = 40; r > 0; r -= 5) {
-        let alpha = map(r, 0, 40, 255, 100);
+    for (let r = s(40); r > 0; r -= s(5)) {
+        let alpha = map(r, 0, s(40), 255, 100);
         fill(coreR, coreG, coreB, alpha);
         ellipse(cx, cy, r, r);
     }
@@ -196,21 +200,21 @@ function drawSuperpositionState(cx, cy) {
     // Quantum fluctuation particles
     for (let i = 0; i < 20; i++) {
         let angle = time * 0.5 + i * TWO_PI / 20;
-        let radius = 80 + sin(time * 2 + i) * 20;
+        let radius = s(80) + sin(time * 2 + i) * s(20);
         let px = cx + cos(angle) * radius;
         let py = cy + sin(angle) * radius * 0.6;
 
         let pColor = i % 2 === 0 ? colors.stateUp : colors.stateDown;
         fill(pColor[0], pColor[1], pColor[2], 100);
         noStroke();
-        ellipse(px, py, 6, 6);
+        ellipse(px, py, s(6), s(6));
     }
 
     // Superposition symbol
     fill(textColor[0], textColor[1], textColor[2]);
     textAlign(CENTER, CENTER);
-    textSize(24);
-    text("|ψ⟩ = α|↑⟩ + β|↓⟩", cx, cy + 160);
+    textSize(s(24));
+    text("|ψ⟩ = α|↑⟩ + β|↓⟩", cx, cy + s(160));
 }
 
 function drawCollapsedState(cx, cy) {
@@ -219,7 +223,7 @@ function drawCollapsedState(cx, cy) {
         let flashAlpha = map(measurementAnimation, 0.5, 1, 0, 200);
         fill(255, 255, 255, flashAlpha);
         noStroke();
-        ellipse(cx, cy, 300, 300);
+        ellipse(cx, cy, s(300), s(300));
     }
 
     // Show only the measured state
@@ -229,9 +233,9 @@ function drawCollapsedState(cx, cy) {
 
     // Solid particle
     let pulse = sin(time * 3) * 0.1 + 1;
-    let size = 100 * pulse;
+    let size = s(100) * pulse;
 
-    for (let r = size; r > 0; r -= 6) {
+    for (let r = size; r > 0; r -= s(6)) {
         let alpha = map(r, 0, size, 255, 50);
         fill(stateColor[0], stateColor[1], stateColor[2], alpha);
         noStroke();
@@ -240,35 +244,35 @@ function drawCollapsedState(cx, cy) {
 
     // Core
     fill(255, 255, 240);
-    ellipse(cx, stateY, 20, 20);
+    ellipse(cx, stateY, s(20), s(20));
 
     // Arrow indicator
     stroke(stateColor[0], stateColor[1], stateColor[2]);
-    strokeWeight(4);
+    strokeWeight(s(4));
     noFill();
-    let arrowSize = 50;
+    let arrowSize = s(50);
     if (measuredState === 0) {
         // Up arrow
-        line(cx, stateY - 60, cx, stateY - 60 - arrowSize);
-        line(cx - 15, stateY - 60 - arrowSize + 20, cx, stateY - 60 - arrowSize);
-        line(cx + 15, stateY - 60 - arrowSize + 20, cx, stateY - 60 - arrowSize);
+        line(cx, stateY - s(60), cx, stateY - s(60) - arrowSize);
+        line(cx - s(15), stateY - s(60) - arrowSize + s(20), cx, stateY - s(60) - arrowSize);
+        line(cx + s(15), stateY - s(60) - arrowSize + s(20), cx, stateY - s(60) - arrowSize);
     } else {
         // Down arrow
-        line(cx, stateY + 60, cx, stateY + 60 + arrowSize);
-        line(cx - 15, stateY + 60 + arrowSize - 20, cx, stateY + 60 + arrowSize);
-        line(cx + 15, stateY + 60 + arrowSize - 20, cx, stateY + 60 + arrowSize);
+        line(cx, stateY + s(60), cx, stateY + s(60) + arrowSize);
+        line(cx - s(15), stateY + s(60) + arrowSize - s(20), cx, stateY + s(60) + arrowSize);
+        line(cx + s(15), stateY + s(60) + arrowSize - s(20), cx, stateY + s(60) + arrowSize);
     }
 
     // State label
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(CENTER, CENTER);
-    textSize(28);
-    text(stateLabel, cx, cy + 160);
+    textSize(s(28));
+    text(stateLabel, cx, cy + s(160));
 
-    textSize(14);
+    textSize(s(14));
     fill(textColor[0], textColor[1], textColor[2], 180);
-    text("Wavefunction collapsed!", cx, cy + 190);
+    text("Wavefunction collapsed!", cx, cy + s(190));
 }
 
 function drawStateLabels() {
@@ -276,15 +280,15 @@ function drawStateLabels() {
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(CENTER, CENTER);
-    textSize(14);
+    textSize(s(14));
 
     // Spin up label
     fill(colors.stateUp[0], colors.stateUp[1], colors.stateUp[2]);
-    text("Spin Up |↑⟩", 100, 60);
+    text("Spin Up |↑⟩", s(100), s(60));
 
     // Spin down label
     fill(colors.stateDown[0], colors.stateDown[1], colors.stateDown[2]);
-    text("Spin Down |↓⟩", 100, 85);
+    text("Spin Down |↓⟩", s(100), s(85));
 
     pop();
 }
@@ -293,27 +297,27 @@ function drawProbabilityGraph() {
     push();
 
     const graphLeft = graphX;
-    const graphRight = width - 40;
-    const graphTop = 80;
-    const graphBottom = height - 80;
+    const graphRight = width - s(40);
+    const graphTop = s(80);
+    const graphBottom = height - s(80);
     const graphMidX = (graphLeft + graphRight) / 2;
 
     // Graph background
     fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
     stroke(textColor[0], textColor[1], textColor[2], 50);
     strokeWeight(1);
-    rect(graphLeft - 10, graphTop - 30, graphRight - graphLeft + 20, graphBottom - graphTop + 60, 8);
+    rect(graphLeft - s(10), graphTop - s(30), graphRight - graphLeft + s(20), graphBottom - graphTop + s(60), s(8));
 
     // Title
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(CENTER);
-    textSize(12);
-    text("Probability Distribution", graphMidX, graphTop - 10);
+    textSize(s(12));
+    text("Probability Distribution", graphMidX, graphTop - s(10));
 
     // Bar chart
-    const barWidth = 80;
-    const maxBarHeight = graphBottom - graphTop - 60;
+    const barWidth = s(80);
+    const maxBarHeight = graphBottom - graphTop - s(60);
 
     // Spin up bar
     let upHeight = maxBarHeight * probUp;
@@ -321,7 +325,7 @@ function drawProbabilityGraph() {
         upHeight = measuredState === 0 ? maxBarHeight : 0;
     }
     fill(colors.stateUp[0], colors.stateUp[1], colors.stateUp[2]);
-    rect(graphMidX - barWidth - 20, graphBottom - 30 - upHeight, barWidth, upHeight, 4);
+    rect(graphMidX - barWidth - s(20), graphBottom - s(30) - upHeight, barWidth, upHeight, s(4));
 
     // Spin down bar
     let downHeight = maxBarHeight * probDown;
@@ -329,32 +333,32 @@ function drawProbabilityGraph() {
         downHeight = measuredState === 1 ? maxBarHeight : 0;
     }
     fill(colors.stateDown[0], colors.stateDown[1], colors.stateDown[2]);
-    rect(graphMidX + 20, graphBottom - 30 - downHeight, barWidth, downHeight, 4);
+    rect(graphMidX + s(20), graphBottom - s(30) - downHeight, barWidth, downHeight, s(4));
 
     // Labels
     fill(textColor[0], textColor[1], textColor[2]);
     textAlign(CENTER);
-    textSize(11);
-    text("|↑⟩", graphMidX - barWidth / 2 - 20, graphBottom - 10);
-    text("|↓⟩", graphMidX + barWidth / 2 + 20, graphBottom - 10);
+    textSize(s(11));
+    text("|↑⟩", graphMidX - barWidth / 2 - s(20), graphBottom - s(10));
+    text("|↓⟩", graphMidX + barWidth / 2 + s(20), graphBottom - s(10));
 
     // Probability values
-    textSize(12);
+    textSize(s(12));
     if (!isMeasured) {
-        text(Math.round(probUp * 100) + "%", graphMidX - barWidth / 2 - 20, graphBottom - 40 - upHeight);
-        text(Math.round(probDown * 100) + "%", graphMidX + barWidth / 2 + 20, graphBottom - 40 - downHeight);
+        text(Math.round(probUp * 100) + "%", graphMidX - barWidth / 2 - s(20), graphBottom - s(40) - upHeight);
+        text(Math.round(probDown * 100) + "%", graphMidX + barWidth / 2 + s(20), graphBottom - s(40) - downHeight);
     } else {
-        text(measuredState === 0 ? "100%" : "0%", graphMidX - barWidth / 2 - 20, graphBottom - 40 - upHeight);
-        text(measuredState === 1 ? "100%" : "0%", graphMidX + barWidth / 2 + 20, graphBottom - 40 - downHeight);
+        text(measuredState === 0 ? "100%" : "0%", graphMidX - barWidth / 2 - s(20), graphBottom - s(40) - upHeight);
+        text(measuredState === 1 ? "100%" : "0%", graphMidX + barWidth / 2 + s(20), graphBottom - s(40) - downHeight);
     }
 
     // Status text
-    textSize(11);
+    textSize(s(11));
     fill(textColor[0], textColor[1], textColor[2], 180);
     if (isMeasured) {
-        text("State: Measured", graphMidX, graphTop + 20);
+        text("State: Measured", graphMidX, graphTop + s(20));
     } else {
-        text("State: Superposition", graphMidX, graphTop + 20);
+        text("State: Superposition", graphMidX, graphTop + s(20));
     }
 
     pop();
@@ -365,11 +369,11 @@ function drawTitle() {
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(LEFT);
-    textSize(12);
-    text("Quantum Superposition", 25, 28);
-    textSize(10);
+    textSize(s(12));
+    text("Quantum Superposition", s(25), s(28));
+    textSize(s(10));
     fill(textColor[0], textColor[1], textColor[2], 180);
-    text("A particle exists in multiple states until measured", 25, 46);
+    text("A particle exists in multiple states until measured", s(25), s(46));
     pop();
 }
 

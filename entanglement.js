@@ -1,5 +1,6 @@
 // Quantum Entanglement Simulation
 // Visualizes two entangled particles with correlated measurements
+// With proper scaling for responsive design
 
 let particleA = { measured: false, spin: 0 };
 let particleB = { measured: false, spin: 0 };
@@ -8,39 +9,42 @@ let time = 0;
 let distance = 300; // Distance between particles
 let connectionAnimation = 0;
 
-// Canvas dimensions - will be set dynamically
-let canvasWidth = 1100;
-let canvasHeight = 550;
+// Canvas dimensions - base dimensions at scale 1.0
+const BASE_WIDTH = 1100;
+const BASE_HEIGHT = 550;
+const BASE_SIM_WIDTH = 700;
+const BASE_GRAPH_WIDTH = 350;
 
-// Layout
-let simWidth = 700;
-let graphWidth = 350;
+// Actual canvas dimensions (scaled)
+let canvasWidth = BASE_WIDTH;
+let canvasHeight = BASE_HEIGHT;
+let simWidth = BASE_SIM_WIDTH;
+let graphWidth = BASE_GRAPH_WIDTH;
 let graphX = simWidth + 30;
 let scaleFactor = 1;
 
 function calculateDimensions() {
-    // Maintain minimum canvas size for horizontal layout
-    const minWidth = 900;
-    const idealWidth = 1100;
     const containerWidth = window.innerWidth - 40;
 
-    // Use ideal width on larger screens, maintain minimum on smaller screens
-    if (containerWidth >= idealWidth) {
-        canvasWidth = idealWidth;
+    // Calculate scale factor based on available width
+    if (containerWidth >= BASE_WIDTH) {
         scaleFactor = 1;
-    } else if (containerWidth >= minWidth) {
-        canvasWidth = containerWidth;
-        scaleFactor = containerWidth / idealWidth;
     } else {
-        // On very small screens, maintain minimum width (will scroll horizontally)
-        canvasWidth = minWidth;
-        scaleFactor = minWidth / idealWidth;
+        // Scale down proportionally, with a minimum scale
+        scaleFactor = Math.max(containerWidth / BASE_WIDTH, 0.5);
     }
 
-    canvasHeight = Math.floor(550 * scaleFactor);
-    simWidth = Math.floor(700 * scaleFactor);
-    graphWidth = Math.floor(350 * scaleFactor);
+    // Apply scaling to all dimensions
+    canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
+    canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+    simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+    graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
     graphX = simWidth + Math.floor(30 * scaleFactor);
+}
+
+// Helper function to scale values
+function s(value) {
+    return value * scaleFactor;
 }
 
 // Colors
@@ -155,11 +159,14 @@ function draw() {
         connectionAnimation = min(1, connectionAnimation + 0.02);
     }
 
+    // Scale distance for drawing
+    const scaledDistance = s(distance);
+
     // Draw simulation
-    drawConnection();
-    drawParticleA();
-    drawParticleB();
-    drawLabels();
+    drawConnection(scaledDistance);
+    drawParticleA(scaledDistance);
+    drawParticleB(scaledDistance);
+    drawDistanceLabels(scaledDistance);
 
     // Draw correlation chart
     drawCorrelationChart();
@@ -168,13 +175,13 @@ function draw() {
     drawTitle();
 }
 
-function drawConnection() {
+function drawConnection(scaledDistance) {
     if (!entangled) return;
 
     push();
     const centerY = height / 2;
-    const aX = simWidth / 2 - distance / 2;
-    const bX = simWidth / 2 + distance / 2;
+    const aX = simWidth / 2 - scaledDistance / 2;
+    const bX = simWidth / 2 + scaledDistance / 2;
 
     // Wavy connection line
     noFill();
@@ -184,13 +191,13 @@ function drawConnection() {
         for (let i = 0; i < 3; i++) {
             let alpha = map(i, 0, 3, 150, 50) * connectionAnimation;
             stroke(colors.connection[0], colors.connection[1], colors.connection[2], alpha);
-            strokeWeight(3 - i);
+            strokeWeight(s(3) - i);
 
             beginShape();
-            for (let x = aX + 40; x < bX - 40; x += 5) {
+            for (let x = aX + s(40); x < bX - s(40); x += s(5)) {
                 let progress = (x - aX) / (bX - aX);
-                let waveAmp = 15 * sin(progress * PI) * connectionAnimation;
-                let y = centerY + sin(x * 0.05 + time * 3 + i) * waveAmp;
+                let waveAmp = s(15) * sin(progress * PI) * connectionAnimation;
+                let y = centerY + sin(x * 0.05 / scaleFactor + time * 3 + i) * waveAmp;
                 vertex(x, y);
             }
             endShape();
@@ -199,36 +206,36 @@ function drawConnection() {
         // Floating particles along connection
         for (let i = 0; i < 8; i++) {
             let t = (time * 0.3 + i * 0.125) % 1;
-            let x = lerp(aX + 40, bX - 40, t);
-            let y = centerY + sin(x * 0.05 + time * 3) * 10 * sin(t * PI);
+            let x = lerp(aX + s(40), bX - s(40), t);
+            let y = centerY + sin(x * 0.05 / scaleFactor + time * 3) * s(10) * sin(t * PI);
 
             fill(colors.connection[0], colors.connection[1], colors.connection[2], 150 * connectionAnimation);
             noStroke();
-            ellipse(x, y, 6, 6);
+            ellipse(x, y, s(6), s(6));
         }
     } else {
         // Broken connection - dashed line
         stroke(colors.connection[0], colors.connection[1], colors.connection[2], 50);
         strokeWeight(1);
-        drawingContext.setLineDash([5, 10]);
-        line(aX + 40, centerY, bX - 40, centerY);
+        drawingContext.setLineDash([s(5), s(10)]);
+        line(aX + s(40), centerY, bX - s(40), centerY);
         drawingContext.setLineDash([]);
     }
 
     pop();
 }
 
-function drawParticleA() {
+function drawParticleA(scaledDistance) {
     push();
     const centerY = height / 2;
-    const x = simWidth / 2 - distance / 2;
+    const x = simWidth / 2 - scaledDistance / 2;
 
     // Particle glow
     if (!particleA.measured) {
         // Superposition glow
         let pulse = sin(time * 2) * 0.2 + 1;
-        for (let r = 80 * pulse; r > 0; r -= 8) {
-            let alpha = map(r, 0, 80, 150, 0);
+        for (let r = s(80) * pulse; r > 0; r -= s(8)) {
+            let alpha = map(r, 0, s(80), 150, 0);
             fill(colors.particleA[0], colors.particleA[1], colors.particleA[2], alpha);
             noStroke();
             ellipse(x, centerY, r, r);
@@ -237,16 +244,16 @@ function drawParticleA() {
         // Uncertainty ring
         noFill();
         stroke(colors.particleA[0], colors.particleA[1], colors.particleA[2], 100);
-        strokeWeight(2);
-        let ringSize = 60 + sin(time * 3) * 10;
+        strokeWeight(s(2));
+        let ringSize = s(60) + sin(time * 3) * s(10);
         ellipse(x, centerY, ringSize, ringSize);
     } else {
         // Measured state
         let spinColor = particleA.spin === 1 ? colors.spinUp : colors.spinDown;
         let pulse = sin(time * 3) * 0.1 + 1;
 
-        for (let r = 60 * pulse; r > 0; r -= 6) {
-            let alpha = map(r, 0, 60, 200, 50);
+        for (let r = s(60) * pulse; r > 0; r -= s(6)) {
+            let alpha = map(r, 0, s(60), 200, 50);
             fill(spinColor[0], spinColor[1], spinColor[2], alpha);
             noStroke();
             ellipse(x, centerY, r, r);
@@ -254,50 +261,50 @@ function drawParticleA() {
 
         // Spin arrow
         stroke(255);
-        strokeWeight(3);
-        let arrowLen = 25;
+        strokeWeight(s(3));
+        let arrowLen = s(25);
         if (particleA.spin === 1) {
-            line(x, centerY + 10, x, centerY - arrowLen);
-            line(x - 8, centerY - arrowLen + 12, x, centerY - arrowLen);
-            line(x + 8, centerY - arrowLen + 12, x, centerY - arrowLen);
+            line(x, centerY + s(10), x, centerY - arrowLen);
+            line(x - s(8), centerY - arrowLen + s(12), x, centerY - arrowLen);
+            line(x + s(8), centerY - arrowLen + s(12), x, centerY - arrowLen);
         } else {
-            line(x, centerY - 10, x, centerY + arrowLen);
-            line(x - 8, centerY + arrowLen - 12, x, centerY + arrowLen);
-            line(x + 8, centerY + arrowLen - 12, x, centerY + arrowLen);
+            line(x, centerY - s(10), x, centerY + arrowLen);
+            line(x - s(8), centerY + arrowLen - s(12), x, centerY + arrowLen);
+            line(x + s(8), centerY + arrowLen - s(12), x, centerY + arrowLen);
         }
     }
 
     // Core
     fill(255, 255, 240);
     noStroke();
-    ellipse(x, centerY, 16, 16);
+    ellipse(x, centerY, s(16), s(16));
 
     // Label
     fill(textColor[0], textColor[1], textColor[2]);
     textAlign(CENTER);
-    textSize(14);
-    text("Particle A", x, centerY + 70);
+    textSize(s(14));
+    text("Particle A", x, centerY + s(70));
 
     if (particleA.measured) {
-        textSize(12);
+        textSize(s(12));
         fill(particleA.spin === 1 ? colors.spinUp : colors.spinDown);
-        text(particleA.spin === 1 ? "Spin ↑" : "Spin ↓", x, centerY + 90);
+        text(particleA.spin === 1 ? "Spin ↑" : "Spin ↓", x, centerY + s(90));
     }
 
     pop();
 }
 
-function drawParticleB() {
+function drawParticleB(scaledDistance) {
     push();
     const centerY = height / 2;
-    const x = simWidth / 2 + distance / 2;
+    const x = simWidth / 2 + scaledDistance / 2;
 
     // Particle glow
     if (!particleB.measured) {
         // Superposition glow
         let pulse = sin(time * 2 + PI) * 0.2 + 1;
-        for (let r = 80 * pulse; r > 0; r -= 8) {
-            let alpha = map(r, 0, 80, 150, 0);
+        for (let r = s(80) * pulse; r > 0; r -= s(8)) {
+            let alpha = map(r, 0, s(80), 150, 0);
             fill(colors.particleB[0], colors.particleB[1], colors.particleB[2], alpha);
             noStroke();
             ellipse(x, centerY, r, r);
@@ -306,16 +313,16 @@ function drawParticleB() {
         // Uncertainty ring
         noFill();
         stroke(colors.particleB[0], colors.particleB[1], colors.particleB[2], 100);
-        strokeWeight(2);
-        let ringSize = 60 + sin(time * 3 + PI) * 10;
+        strokeWeight(s(2));
+        let ringSize = s(60) + sin(time * 3 + PI) * s(10);
         ellipse(x, centerY, ringSize, ringSize);
     } else {
         // Measured state
         let spinColor = particleB.spin === 1 ? colors.spinUp : colors.spinDown;
         let pulse = sin(time * 3) * 0.1 + 1;
 
-        for (let r = 60 * pulse; r > 0; r -= 6) {
-            let alpha = map(r, 0, 60, 200, 50);
+        for (let r = s(60) * pulse; r > 0; r -= s(6)) {
+            let alpha = map(r, 0, s(60), 200, 50);
             fill(spinColor[0], spinColor[1], spinColor[2], alpha);
             noStroke();
             ellipse(x, centerY, r, r);
@@ -323,58 +330,58 @@ function drawParticleB() {
 
         // Spin arrow
         stroke(255);
-        strokeWeight(3);
-        let arrowLen = 25;
+        strokeWeight(s(3));
+        let arrowLen = s(25);
         if (particleB.spin === 1) {
-            line(x, centerY + 10, x, centerY - arrowLen);
-            line(x - 8, centerY - arrowLen + 12, x, centerY - arrowLen);
-            line(x + 8, centerY - arrowLen + 12, x, centerY - arrowLen);
+            line(x, centerY + s(10), x, centerY - arrowLen);
+            line(x - s(8), centerY - arrowLen + s(12), x, centerY - arrowLen);
+            line(x + s(8), centerY - arrowLen + s(12), x, centerY - arrowLen);
         } else {
-            line(x, centerY - 10, x, centerY + arrowLen);
-            line(x - 8, centerY + arrowLen - 12, x, centerY + arrowLen);
-            line(x + 8, centerY + arrowLen - 12, x, centerY + arrowLen);
+            line(x, centerY - s(10), x, centerY + arrowLen);
+            line(x - s(8), centerY + arrowLen - s(12), x, centerY + arrowLen);
+            line(x + s(8), centerY + arrowLen - s(12), x, centerY + arrowLen);
         }
     }
 
     // Core
     fill(255, 255, 240);
     noStroke();
-    ellipse(x, centerY, 16, 16);
+    ellipse(x, centerY, s(16), s(16));
 
     // Label
     fill(textColor[0], textColor[1], textColor[2]);
     textAlign(CENTER);
-    textSize(14);
-    text("Particle B", x, centerY + 70);
+    textSize(s(14));
+    text("Particle B", x, centerY + s(70));
 
     if (particleB.measured) {
-        textSize(12);
+        textSize(s(12));
         fill(particleB.spin === 1 ? colors.spinUp : colors.spinDown);
-        text(particleB.spin === 1 ? "Spin ↑" : "Spin ↓", x, centerY + 90);
+        text(particleB.spin === 1 ? "Spin ↑" : "Spin ↓", x, centerY + s(90));
     }
 
     pop();
 }
 
-function drawLabels() {
+function drawDistanceLabels(scaledDistance) {
     push();
 
     // Distance indicator
     const centerY = height / 2;
-    const aX = simWidth / 2 - distance / 2;
-    const bX = simWidth / 2 + distance / 2;
+    const aX = simWidth / 2 - scaledDistance / 2;
+    const bX = simWidth / 2 + scaledDistance / 2;
 
     stroke(textColor[0], textColor[1], textColor[2], 100);
     strokeWeight(1);
-    line(aX, centerY + 120, bX, centerY + 120);
-    line(aX, centerY + 115, aX, centerY + 125);
-    line(bX, centerY + 115, bX, centerY + 125);
+    line(aX, centerY + s(120), bX, centerY + s(120));
+    line(aX, centerY + s(115), aX, centerY + s(125));
+    line(bX, centerY + s(115), bX, centerY + s(125));
 
     fill(textColor[0], textColor[1], textColor[2], 180);
     noStroke();
     textAlign(CENTER);
-    textSize(11);
-    text(distance + " units apart", simWidth / 2, centerY + 140);
+    textSize(s(11));
+    text(distance + " units apart", simWidth / 2, centerY + s(140));
 
     pop();
 }
@@ -383,132 +390,133 @@ function drawCorrelationChart() {
     push();
 
     const graphLeft = graphX;
-    const graphRight = width - 40;
-    const graphTop = 60;
-    const graphBottom = height - 60;
+    const graphRight = width - s(40);
+    const graphTop = s(60);
+    const graphBottom = height - s(60);
     const graphMidX = (graphLeft + graphRight) / 2;
 
     // Background
     fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
     stroke(textColor[0], textColor[1], textColor[2], 50);
     strokeWeight(1);
-    rect(graphLeft - 10, graphTop - 30, graphRight - graphLeft + 20, graphBottom - graphTop + 60, 8);
+    rect(graphLeft - s(10), graphTop - s(30), graphRight - graphLeft + s(20), graphBottom - graphTop + s(60), s(8));
 
     // Title
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(CENTER);
-    textSize(12);
-    text("Entanglement State", graphMidX, graphTop - 5);
+    textSize(s(12));
+    text("Entanglement State", graphMidX, graphTop - s(5));
 
     // State display
-    const boxHeight = 80;
-    const boxY = graphTop + 40;
+    const boxHeight = s(80);
+    const boxY = graphTop + s(40);
+    const boxWidth = s(120);
 
     // Particle A box
     fill(colors.particleA[0], colors.particleA[1], colors.particleA[2], 30);
     stroke(colors.particleA[0], colors.particleA[1], colors.particleA[2]);
-    strokeWeight(2);
-    rect(graphLeft + 10, boxY, 140, boxHeight, 8);
+    strokeWeight(s(2));
+    rect(graphLeft + s(10), boxY, boxWidth, boxHeight, s(8));
 
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(CENTER);
-    textSize(11);
-    text("Particle A", graphLeft + 80, boxY + 20);
+    textSize(s(11));
+    text("Particle A", graphLeft + s(10) + boxWidth / 2, boxY + s(20));
 
-    textSize(18);
+    textSize(s(18));
     if (particleA.measured) {
         fill(particleA.spin === 1 ? colors.spinUp : colors.spinDown);
-        text(particleA.spin === 1 ? "↑" : "↓", graphLeft + 80, boxY + 55);
+        text(particleA.spin === 1 ? "↑" : "↓", graphLeft + s(10) + boxWidth / 2, boxY + s(55));
     } else {
         fill(textColor[0], textColor[1], textColor[2], 150);
-        text("?", graphLeft + 80, boxY + 55);
+        text("?", graphLeft + s(10) + boxWidth / 2, boxY + s(55));
     }
 
     // Particle B box
     fill(colors.particleB[0], colors.particleB[1], colors.particleB[2], 30);
     stroke(colors.particleB[0], colors.particleB[1], colors.particleB[2]);
-    strokeWeight(2);
-    rect(graphRight - 150, boxY, 140, boxHeight, 8);
+    strokeWeight(s(2));
+    rect(graphRight - boxWidth - s(10), boxY, boxWidth, boxHeight, s(8));
 
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(CENTER);
-    textSize(11);
-    text("Particle B", graphRight - 80, boxY + 20);
+    textSize(s(11));
+    text("Particle B", graphRight - s(10) - boxWidth / 2, boxY + s(20));
 
-    textSize(18);
+    textSize(s(18));
     if (particleB.measured) {
         fill(particleB.spin === 1 ? colors.spinUp : colors.spinDown);
-        text(particleB.spin === 1 ? "↑" : "↓", graphRight - 80, boxY + 55);
+        text(particleB.spin === 1 ? "↑" : "↓", graphRight - s(10) - boxWidth / 2, boxY + s(55));
     } else {
         fill(textColor[0], textColor[1], textColor[2], 150);
-        text("?", graphRight - 80, boxY + 55);
+        text("?", graphRight - s(10) - boxWidth / 2, boxY + s(55));
     }
 
     // Correlation indicator
-    const corrY = boxY + boxHeight + 40;
+    const corrY = boxY + boxHeight + s(40);
     fill(textColor[0], textColor[1], textColor[2]);
-    textSize(11);
+    textSize(s(11));
     text("Correlation", graphMidX, corrY);
 
     // Correlation bar
-    let corrWidth = 200;
-    let corrHeight = 20;
+    let corrWidth = s(180);
+    let corrHeight = s(20);
     let corrX = graphMidX - corrWidth / 2;
 
     fill(colors.bg[0] + 20, colors.bg[1] + 20, colors.bg[2] + 20);
     stroke(textColor[0], textColor[1], textColor[2], 50);
     strokeWeight(1);
-    rect(corrX, corrY + 10, corrWidth, corrHeight, 4);
+    rect(corrX, corrY + s(10), corrWidth, corrHeight, s(4));
 
     // Fill based on state
     if (particleA.measured && particleB.measured) {
         // Perfect anti-correlation
         fill(colors.connection[0], colors.connection[1], colors.connection[2]);
         noStroke();
-        rect(corrX + 2, corrY + 12, corrWidth - 4, corrHeight - 4, 3);
+        rect(corrX + 2, corrY + s(12), corrWidth - 4, corrHeight - 4, s(3));
 
         fill(255);
-        textSize(10);
-        text("100% Anti-correlated", graphMidX, corrY + 24);
+        textSize(s(10));
+        text("100% Anti-correlated", graphMidX, corrY + s(24));
     } else if (entangled) {
         // Entangled but not measured
         let pulseWidth = (corrWidth - 4) * (0.5 + sin(time * 2) * 0.3);
         fill(colors.connection[0], colors.connection[1], colors.connection[2], 100);
         noStroke();
-        rect(corrX + (corrWidth - pulseWidth) / 2, corrY + 12, pulseWidth, corrHeight - 4, 3);
+        rect(corrX + (corrWidth - pulseWidth) / 2, corrY + s(12), pulseWidth, corrHeight - 4, s(3));
     }
 
     // Explanation
-    textSize(10);
+    textSize(s(10));
     fill(textColor[0], textColor[1], textColor[2], 150);
     textAlign(CENTER);
 
-    let explanationY = corrY + 60;
+    let explanationY = corrY + s(60);
     if (!particleA.measured && !particleB.measured) {
         text("Particles are entangled.", graphMidX, explanationY);
-        text("Measure one to collapse both!", graphMidX, explanationY + 16);
+        text("Measure one to collapse both!", graphMidX, explanationY + s(16));
     } else {
         text("Spins are always opposite!", graphMidX, explanationY);
-        text("\"Spooky action at a distance\"", graphMidX, explanationY + 16);
+        text("\"Spooky action at a distance\"", graphMidX, explanationY + s(16));
     }
 
     // Legend
-    let legendY = graphBottom - 60;
-    textSize(10);
+    let legendY = graphBottom - s(50);
+    textSize(s(10));
     textAlign(LEFT);
 
     fill(colors.spinUp[0], colors.spinUp[1], colors.spinUp[2]);
-    ellipse(graphLeft + 20, legendY, 10, 10);
+    ellipse(graphLeft + s(20), legendY, s(10), s(10));
     fill(textColor[0], textColor[1], textColor[2]);
-    text("Spin Up", graphLeft + 30, legendY + 4);
+    text("Spin Up", graphLeft + s(30), legendY + s(4));
 
     fill(colors.spinDown[0], colors.spinDown[1], colors.spinDown[2]);
-    ellipse(graphLeft + 20, legendY + 20, 10, 10);
+    ellipse(graphLeft + s(20), legendY + s(20), s(10), s(10));
     fill(textColor[0], textColor[1], textColor[2]);
-    text("Spin Down", graphLeft + 30, legendY + 24);
+    text("Spin Down", graphLeft + s(30), legendY + s(24));
 
     pop();
 }
@@ -518,11 +526,11 @@ function drawTitle() {
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textAlign(LEFT);
-    textSize(12);
-    text("Quantum Entanglement", 25, 28);
-    textSize(10);
+    textSize(s(12));
+    text("Quantum Entanglement", s(25), s(28));
+    textSize(s(10));
     fill(textColor[0], textColor[1], textColor[2], 180);
-    text("Two particles, one quantum state", 25, 46);
+    text("Two particles, one quantum state", s(25), s(46));
     pop();
 }
 

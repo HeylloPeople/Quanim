@@ -287,6 +287,41 @@
             color: var(--value-color);
         }
 
+        .action-btn {
+            padding: 12px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--shadow-strong);
+            border-color: var(--border-hover);
+        }
+
+        .action-btn.active {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .action-btn.active:hover {
+            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.4);
+        }
+
+        .observer-control {
+            min-width: auto;
+        }
+
         .info-panel {
             margin-top: 32px;
             max-width: 900px;
@@ -528,6 +563,9 @@
             <label>Slit Width</label>
             <input type="range" id="slitWidthSlider" min="5" max="40" value="15">
             <span class="value-display" id="slitWidthValue">15</span>
+        </div>
+        <div class="control-group observer-control">
+            <button class="action-btn" id="observerBtn">👁 Observer OFF</button>
         </div>
     </div>
 
