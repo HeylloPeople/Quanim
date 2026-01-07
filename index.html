@@ -4,12 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Double-Slit Experiment Simulation</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Quanim - Quantum Physics Visualizations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Light mode (default) - Simple Black & White */
             --bg-primary: #ffffff;
             --bg-secondary: #f4f4f4;
             --bg-tertiary: #e0e0e0;
@@ -22,14 +20,11 @@
             --border-hover: #333333;
             --shadow: rgba(0, 0, 0, 0.1);
             --shadow-strong: rgba(0, 0, 0, 0.2);
-            --value-color: #000000;
-            /* Box background for labels */
-            --label-bg: #ffffff;
-            --label-border: #000000;
+            --gradient-start: #f8f9fa;
+            --gradient-end: #e9ecef;
         }
 
         [data-theme="dark"] {
-            /* Dark mode - Softer Dark Grey */
             --bg-primary: #121212;
             --bg-secondary: #1e1e1e;
             --bg-tertiary: #2a2a2a;
@@ -42,10 +37,8 @@
             --border-hover: #888888;
             --shadow: rgba(0, 0, 0, 0.4);
             --shadow-strong: rgba(0, 0, 0, 0.6);
-            --value-color: #ffffff;
-            /* Box background for labels */
-            --label-bg: #1e1e1e;
-            --label-border: #ffffff;
+            --gradient-start: #1a1a2e;
+            --gradient-end: #16213e;
         }
 
         * {
@@ -58,14 +51,12 @@
             font-family: 'Outfit', sans-serif;
             background: var(--bg-primary);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
             color: var(--text-primary);
             transition: background 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
         }
 
+        /* Theme Toggle */
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -131,299 +122,285 @@
             opacity: 1;
         }
 
-        h1 {
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 20%, rgba(100, 100, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(255, 100, 100, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+        }
+
+        .logo {
+            font-size: 5rem;
+            font-weight: 700;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease 0.1s both;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        /* Simulation Cards */
+        .simulation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: fadeInUp 0.8s ease 0.3s both;
+        }
+
+        .sim-card {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 20px;
+            padding: 30px 25px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .sim-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px var(--shadow-strong);
+            border-color: var(--border-hover);
+            background: var(--bg-tertiary);
+        }
+
+        .sim-card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .sim-card-title {
+            font-size: 1.3rem;
             font-weight: 600;
-            font-size: 2.2rem;
             margin-bottom: 10px;
             color: var(--text-primary);
         }
 
-        .subtitle {
-            font-weight: 300;
-            font-size: 1rem;
+        .sim-card-description {
+            font-size: 0.9rem;
             color: var(--text-muted);
+            line-height: 1.5;
             margin-bottom: 20px;
         }
 
-        .back-link {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .back-link:hover {
-            color: var(--text-primary);
-            border-color: var(--border-hover);
-            background: var(--bg-tertiary);
-        }
-
-        #canvas-container {
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 60px var(--shadow-strong);
-            border: 1px solid var(--border);
-        }
-
-        .controls {
-            display: flex;
-            gap: 30px;
-            margin-top: 25px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .control-group {
-            display: flex;
-            flex-direction: column;
+        .sim-card-btn {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: var(--bg-secondary);
-            padding: 15px 25px;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 8px 32px var(--shadow);
+            padding: 10px 24px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--bg-primary);
+            background: var(--text-primary);
+            border-radius: 25px;
             transition: all 0.3s ease;
         }
 
-        .control-group:hover {
-            background: var(--bg-tertiary);
-            border-color: var(--border-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px var(--shadow-strong);
-        }
-
-        .control-group label {
-            font-weight: 400;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .control-group input[type="range"] {
-            width: 150px;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--border);
-            border-radius: 3px;
-            outline: none;
-            border: none;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
-
-        .control-group input[type="range"]:hover {
-            background: var(--border-hover);
-        }
-
-        .control-group input[type="range"]:focus {
-            outline: none;
-            border: none;
-        }
-
-        .control-group input[type="range"]::-webkit-slider-runnable-track {
-            height: 6px;
-            border-radius: 3px;
-            background: inherit;
-        }
-
-        .control-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            box-shadow: 0 2px 8px var(--shadow);
-            transition: all 0.2s ease;
-            margin-top: -6px;
-        }
-
-        .control-group input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
+        .sim-card:hover .sim-card-btn {
             background: var(--accent-hover);
-            box-shadow: 0 4px 12px var(--shadow-strong);
         }
 
-        .control-group input[type="range"]::-moz-range-track {
-            height: 6px;
-            border-radius: 3px;
-            background: var(--border);
+        .sim-card-btn svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
         }
 
-        .control-group input[type="range"]:hover::-moz-range-track {
-            background: var(--border-hover);
+        .sim-card:hover .sim-card-btn svg {
+            transform: translateX(4px);
         }
 
-        .control-group input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 8px var(--shadow);
-            transition: all 0.2s ease;
+        /* Features Section */
+        .features {
+            padding: 100px 20px;
+            background: var(--bg-primary);
         }
 
-        .value-display {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--value-color);
-        }
-
-        .info-panel {
-            margin-top: 25px;
-            max-width: 800px;
+        .section-title {
             text-align: center;
-            padding: 20px 30px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            border: 1px solid var(--border);
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 60px;
+            color: var(--text-primary);
         }
 
-        .info-panel p {
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px var(--shadow-strong);
+            border-color: var(--border-hover);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .feature-description {
             font-size: 0.9rem;
             line-height: 1.6;
-            color: var(--text-secondary);
-        }
-
-        .info-panel strong {
-            color: var(--text-primary);
-        }
-
-        .legend {
-            display: flex;
-            gap: 25px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
             color: var(--text-muted);
         }
 
-        .legend-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
+        /* About Section */
+        .about {
+            padding: 100px 20px;
+            background: var(--bg-secondary);
         }
 
-        .legend-dot.wave {
-            background: var(--text-primary);
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
         }
 
-        .legend-dot.constructive {
-            background: #4a4a4a;
+        .about-text {
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
         }
 
-        [data-theme="dark"] .legend-dot.constructive {
-            background: #b8b8b8;
+        /* Footer */
+        .footer {
+            padding: 40px 20px;
+            text-align: center;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border);
         }
 
-        [data-theme="dark"] .legend-dot.destructive {
-            background: #5a5a5a;
+        .footer-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
         }
 
-        /* Responsive Design */
-        @media screen and (max-width: 1024px) {
-            #canvas-container {
-                width: 100%;
-                overflow-x: auto;
-                border-radius: 12px;
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
 
-            #canvas-container canvas {
-                /* Let p5.js handle accurate sizing/scaling if implemented, or just fit width */
-                max-width: 100%;
-                height: auto !important;
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .logo {
+                font-size: 3.5rem;
             }
 
-            .controls {
-                gap: 20px;
+            .tagline {
+                font-size: 1.2rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .simulation-cards {
+                grid-template-columns: 1fr;
                 padding: 0 10px;
             }
+
+            .sim-card {
+                padding: 25px 20px;
+            }
         }
 
-        @media screen and (max-width: 768px) {
-            body {
-                padding: 15px 10px;
+        @media screen and (max-width: 480px) {
+            .logo {
+                font-size: 2.8rem;
             }
 
-            h1 {
-                font-size: 1.8rem;
-                text-align: center;
-            }
-
-            .subtitle {
-                font-size: 0.9rem;
-                text-align: center;
+            .tagline {
+                font-size: 1rem;
             }
 
             .theme-toggle {
                 top: 15px;
                 right: 15px;
-            }
-
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 15px;
-                width: 100%;
-                max-width: 500px;
-            }
-
-            .control-group {
-                flex-direction: row;
-                justify-content: space-between;
-                width: 100%;
-                padding: 15px 20px;
-            }
-
-            .control-group input[type="range"] {
-                width: 40%;
-            }
-
-            .info-panel {
-                padding: 15px;
-                margin-top: 20px;
-            }
-        }
-
-        @media screen and (max-width: 480px) {
-            h1 {
-                font-size: 1.5rem;
-                margin-top: 30px;
-            }
-
-            .control-group {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
-            }
-
-            .control-group input[type="range"] {
-                width: 100%;
-            }
-
-            .legend {
-                flex-wrap: wrap;
-                gap: 10px;
             }
         }
     </style>
@@ -431,68 +408,136 @@
 
 <body>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
-        <!-- Sun icon (outline only) -->
         <svg class="icon icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="4" />
             <path
                 d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
         </svg>
-        <!-- Moon icon (outline only) -->
         <svg class="icon icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
     </button>
 
-    <a href="landing.html" class="back-link" id="backLink">← Back to Home</a>
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="logo">Quanim</h1>
+            <p class="tagline">Quantum Physics, Animated</p>
+            <p class="hero-description">
+                Explore the strange and beautiful world of quantum mechanics through interactive simulations.
+                Experience wave-particle duality, superposition, and entanglement — the phenomena that define
+                reality at its smallest scales.
+            </p>
 
-    <h1>🌊 Double-Slit Experiment</h1>
-    <p class="subtitle">Wave interference & quantum mechanics visualization</p>
+            <div class="simulation-cards">
+                <a href="index.html" class="sim-card">
+                    <div class="sim-card-icon">🌊</div>
+                    <h3 class="sim-card-title">Double-Slit Experiment</h3>
+                    <p class="sim-card-description">
+                        Watch waves pass through slits and create interference patterns, revealing the wave nature of
+                        light and matter.
+                    </p>
+                    <span class="sim-card-btn">
+                        Explore
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                </a>
 
-    <div id="canvas-container"></div>
+                <a href="superposition.html" class="sim-card">
+                    <div class="sim-card-icon">⚛️</div>
+                    <h3 class="sim-card-title">Quantum Superposition</h3>
+                    <p class="sim-card-description">
+                        See a particle exist in multiple states simultaneously until measurement collapses the
+                        wavefunction.
+                    </p>
+                    <span class="sim-card-btn">
+                        Explore
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                </a>
 
-    <div class="controls">
-        <div class="control-group">
-            <label>Wavelength (nm)</label>
-            <input type="range" id="wavelengthSlider" min="380" max="780" value="550">
-            <span class="value-display" id="wavelengthValue">550</span>
+                <a href="entanglement.html" class="sim-card">
+                    <div class="sim-card-icon">🔗</div>
+                    <h3 class="sim-card-title">Quantum Entanglement</h3>
+                    <p class="sim-card-description">
+                        Experience "spooky action at a distance" as measuring one particle instantly affects its
+                        entangled partner.
+                    </p>
+                    <span class="sim-card-btn">
+                        Explore
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </span>
+                </a>
+            </div>
         </div>
-        <div class="control-group">
-            <label>Slit Separation</label>
-            <input type="range" id="slitSepSlider" min="30" max="150" value="80">
-            <span class="value-display" id="slitSepValue">80</span>
-        </div>
-        <div class="control-group">
-            <label>Wave Speed</label>
-            <input type="range" id="speedSlider" min="1" max="10" value="5">
-            <span class="value-display" id="speedValue">5</span>
-        </div>
-        <div class="control-group">
-            <label>Slit Width</label>
-            <input type="range" id="slitWidthSlider" min="5" max="40" value="15">
-            <span class="value-display" id="slitWidthValue">15</span>
-        </div>
-    </div>
+    </section>
 
-    <div class="info-panel">
-        <p>This simulation demonstrates the famous double-slit experiment. Waves pass through two narrow slits and
-            interfere,
-            creating a distinctive pattern of bright and dark bands. The <strong>intensity graph</strong> on the right
-            shows
-            constructive interference (bright) and destructive interference (dark) regions.</p>
-        <div class="legend">
-            <div class="legend-item"><span class="legend-dot wave"></span> Wave fronts</div>
-            <div class="legend-item"><span class="legend-dot constructive"></span> Constructive</div>
-            <div class="legend-item"><span class="legend-dot destructive"></span> Destructive</div>
+    <section class="features">
+        <h2 class="section-title">Why Quanim?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">�</div>
+                <h3 class="feature-title">Interactive Learning</h3>
+                <p class="feature-description">
+                    Adjust parameters in real-time and instantly see how they affect quantum phenomena.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3 class="feature-title">Beautiful Visualizations</h3>
+                <p class="feature-description">
+                    Stunning animations bring abstract quantum concepts to life with clarity and elegance.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Real Physics</h3>
+                <p class="feature-description">
+                    Based on actual quantum mechanics equations, not simplified approximations.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌙</div>
+                <h3 class="feature-title">Dark Mode</h3>
+                <p class="feature-description">
+                    Easy on the eyes with a beautiful dark theme for late-night quantum exploration.
+                </p>
+            </div>
         </div>
-    </div>
+    </section>
 
-    <script src="sketch.js"></script>
+    <section class="about">
+        <div class="about-content">
+            <h2 class="section-title">About Quanim</h2>
+            <p class="about-text">
+                Quanim brings the counterintuitive world of quantum mechanics to your screen. From the famous
+                double-slit experiment that puzzled physicists for centuries, to the mind-bending phenomena
+                of superposition and entanglement — these simulations help you develop an intuition for
+                how nature really works at its most fundamental level.
+            </p>
+            <p class="about-text">
+                Whether you're a student, educator, or simply curious about the quantum world, Quanim provides
+                a hands-on way to explore concepts that even Einstein found troubling. Ready to question reality?
+            </p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p class="footer-text">© 2026 Quanim. Exploring the quantum world, one wave at a time.</p>
+    </footer>
+
     <script>
-        // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
 
-        // Check for saved theme preference or default to light
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             html.setAttribute('data-theme', 'dark');
@@ -503,13 +548,9 @@
             if (currentTheme === 'dark') {
                 html.removeAttribute('data-theme');
                 localStorage.setItem('theme', 'light');
-                // Update p5.js colors
-                if (typeof updateColors === 'function') updateColors('light');
             } else {
                 html.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
-                // Update p5.js colors
-                if (typeof updateColors === 'function') updateColors('dark');
             }
         });
     </script>
