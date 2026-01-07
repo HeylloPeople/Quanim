@@ -16,26 +16,18 @@ let canvasHeight = 550;
 let simWidth = 700;
 let graphWidth = 350;
 let graphX = simWidth + 30;
+let scaleFactor = 1;
 
 function calculateDimensions() {
     const maxWidth = Math.min(window.innerWidth - 40, 1100);
 
-    if (maxWidth < 800) {
-        // Mobile: stack layout
-        canvasWidth = maxWidth;
-        canvasHeight = 700;
-        simWidth = canvasWidth;
-        graphWidth = canvasWidth - 60;
-        graphX = 30;
-    } else {
-        // Desktop: side-by-side layout  
-        canvasWidth = maxWidth;
-        const ratio = maxWidth / 1100;
-        canvasHeight = Math.floor(550 * ratio);
-        simWidth = Math.floor(700 * ratio);
-        graphWidth = Math.floor(350 * ratio);
-        graphX = simWidth + 30;
-    }
+    // Always use proportional scaling
+    scaleFactor = maxWidth / 1100;
+    canvasWidth = maxWidth;
+    canvasHeight = Math.max(Math.floor(550 * scaleFactor), 350);
+    simWidth = Math.floor(700 * scaleFactor);
+    graphWidth = Math.floor(350 * scaleFactor);
+    graphX = simWidth + Math.floor(30 * scaleFactor);
 }
 
 // Colors

@@ -16,32 +16,28 @@ let canvasHeight = 550;
 let simWidth = 700;
 let graphWidth = 350;
 let graphX = simWidth + 30;
+let scaleFactor = 1;
 
 function calculateDimensions() {
-    const container = document.getElementById('canvas-container');
     const maxWidth = Math.min(window.innerWidth - 40, 1100);
 
-    if (maxWidth < 800) {
-        // Mobile: stack layout
-        canvasWidth = maxWidth;
-        canvasHeight = 700;
-        simWidth = canvasWidth;
-        graphWidth = canvasWidth - 60;
-        graphX = 30;
-    } else {
-        // Desktop: side-by-side layout  
-        canvasWidth = maxWidth;
-        const ratio = maxWidth / 1100;
-        canvasHeight = Math.floor(550 * ratio);
-        simWidth = Math.floor(700 * ratio);
-        graphWidth = Math.floor(350 * ratio);
-        graphX = simWidth + 30;
-    }
+    // Always use proportional scaling
+    scaleFactor = maxWidth / 1100;
+    canvasWidth = maxWidth;
+    canvasHeight = Math.max(Math.floor(550 * scaleFactor), 350);
+    simWidth = Math.floor(700 * scaleFactor);
+    graphWidth = Math.floor(350 * scaleFactor);
+    graphX = simWidth + Math.floor(30 * scaleFactor);
 }
 
-// Scene positions (now vertical - Y coordinates)
-const barrierY = 180;
-const screenY = 480;
+// Scene positions (now vertical - Y coordinates) - will be scaled
+let barrierY = 180;
+let screenY = 480;
+
+function updateScenePositions() {
+    barrierY = Math.floor(180 * scaleFactor);
+    screenY = Math.floor(480 * scaleFactor);
+}
 
 // Colors
 let bgColor, barrierColor, screenColor, textColor, accentColor;
@@ -138,6 +134,7 @@ function initColors() {
 function setup() {
     initColors();
     calculateDimensions();
+    updateScenePositions();
     const canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('canvas-container');
 
@@ -520,6 +517,7 @@ function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
     // Graph title
     textAlign(CENTER);
     textSize(11);
+    noStroke();
     fill(textColor[0], textColor[1], textColor[2]);
     text("Interference Pattern", (graphLeft + graphRight) / 2, graphTop - 5);
 
@@ -585,5 +583,6 @@ function drawLabelWithBox(txt, x, y) {
 
 function windowResized() {
     calculateDimensions();
+    updateScenePositions();
     resizeCanvas(canvasWidth, canvasHeight);
 }
