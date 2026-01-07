@@ -8,14 +8,35 @@ let time = 0;
 let distance = 300; // Distance between particles
 let connectionAnimation = 0;
 
-// Canvas dimensions
-const canvasWidth = 1100;
-const canvasHeight = 550;
+// Canvas dimensions - will be set dynamically
+let canvasWidth = 1100;
+let canvasHeight = 550;
 
 // Layout
-const simWidth = 700;
-const graphWidth = 350;
-const graphX = simWidth + 30;
+let simWidth = 700;
+let graphWidth = 350;
+let graphX = simWidth + 30;
+
+function calculateDimensions() {
+    const maxWidth = Math.min(window.innerWidth - 40, 1100);
+
+    if (maxWidth < 800) {
+        // Mobile: stack layout
+        canvasWidth = maxWidth;
+        canvasHeight = 700;
+        simWidth = canvasWidth;
+        graphWidth = canvasWidth - 60;
+        graphX = 30;
+    } else {
+        // Desktop: side-by-side layout  
+        canvasWidth = maxWidth;
+        const ratio = maxWidth / 1100;
+        canvasHeight = Math.floor(550 * ratio);
+        simWidth = Math.floor(700 * ratio);
+        graphWidth = Math.floor(350 * ratio);
+        graphX = simWidth + 30;
+    }
+}
 
 // Colors
 let bgColor, textColor, accentColor;
@@ -62,6 +83,7 @@ function initColors() {
 
 function setup() {
     initColors();
+    calculateDimensions();
     const canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('canvas-container');
 
@@ -499,4 +521,7 @@ function drawTitle() {
     pop();
 }
 
-function windowResized() { }
+function windowResized() {
+    calculateDimensions();
+    resizeCanvas(canvasWidth, canvasHeight);
+}

@@ -8,14 +8,36 @@ let waveSpeed = 5;
 let slitWidth = 15;
 let time = 0;
 
-// Canvas dimensions - wider to fit graph on right
-const canvasWidth = 1100;
-const canvasHeight = 550;
+// Canvas dimensions - will be set dynamically
+let canvasWidth = 1100;
+let canvasHeight = 550;
 
-// Layout - simulation on left, graph on right
-const simWidth = 700;
-const graphWidth = 350;
-const graphX = simWidth + 30;
+// Layout
+let simWidth = 700;
+let graphWidth = 350;
+let graphX = simWidth + 30;
+
+function calculateDimensions() {
+    const container = document.getElementById('canvas-container');
+    const maxWidth = Math.min(window.innerWidth - 40, 1100);
+
+    if (maxWidth < 800) {
+        // Mobile: stack layout
+        canvasWidth = maxWidth;
+        canvasHeight = 700;
+        simWidth = canvasWidth;
+        graphWidth = canvasWidth - 60;
+        graphX = 30;
+    } else {
+        // Desktop: side-by-side layout  
+        canvasWidth = maxWidth;
+        const ratio = maxWidth / 1100;
+        canvasHeight = Math.floor(550 * ratio);
+        simWidth = Math.floor(700 * ratio);
+        graphWidth = Math.floor(350 * ratio);
+        graphX = simWidth + 30;
+    }
+}
 
 // Scene positions (now vertical - Y coordinates)
 const barrierY = 180;
@@ -115,6 +137,7 @@ function initColors() {
 
 function setup() {
     initColors();
+    calculateDimensions();
     const canvas = createCanvas(canvasWidth, canvasHeight);
     canvas.parent('canvas-container');
 
@@ -560,4 +583,7 @@ function drawLabelWithBox(txt, x, y) {
     pop();
 }
 
-function windowResized() { }
+function windowResized() {
+    calculateDimensions();
+    resizeCanvas(canvasWidth, canvasHeight);
+}
