@@ -40,44 +40,84 @@ let screenY = BASE_SCREEN_Y;
 let sourceY = BASE_SOURCE_Y;
 
 function calculateDimensions() {
-    const containerWidth = window.innerWidth - 40;
+    // New layout logic:
+    // Controls take up 20% area on the right (min 260px)
+    // Left Padding is 10%
+    // Right padding is minimal (20px)
 
-    // Check for vertical layout (mobile/narrow screens)
-    isVertical = containerWidth < 900;
-
-    if (isVertical) {
-        // Vertical layout logic
-        scaleFactor = containerWidth / BASE_SIM_WIDTH;
-
-        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-
-        // In vertical mode, graph goes below simulation
-        graphWidth = simWidth; // Graph takes full width
-        let graphHeight = Math.floor(250 * scaleFactor);
-
-        canvasWidth = simWidth;
-        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor) + graphHeight + 20;
-
-        graphX = 0;
-        graphY = Math.floor(BASE_HEIGHT * scaleFactor) + 20;
-
-    } else {
-        // Horizontal layout logic (original)
-        if (containerWidth >= BASE_WIDTH) {
-            scaleFactor = 1;
-        } else {
-            scaleFactor = containerWidth / BASE_WIDTH;
-        }
-
-        canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
-        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-        graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
-        graphX = simWidth + Math.floor(30 * scaleFactor);
-        graphY = 0;
+    // Determine controls width based on CSS logic (20% or min 260px)
+    let controlsWidth = 0;
+    if (window.innerWidth > 900) {
+        controlsWidth = Math.max(window.innerWidth * 0.20, 260);
     }
 
-    // Update scene positions
+    const paddingLeft = window.innerWidth * 0.10;
+    const paddingRight = 20; // Minimal right padding
+    const gap = 24;
+
+    // Canvas width is remaining space
+    let targetWidth;
+    let targetHeight;
+
+    if (window.innerWidth > 900) {
+        targetWidth = Math.floor(window.innerWidth - paddingLeft - paddingRight - controlsWidth - gap);
+        targetHeight = window.innerHeight - 180; // height minus header/padding
+    } else {
+        // Mobile/Tablet: Stacked layout (90% width approx)
+        targetWidth = Math.floor(window.innerWidth * 0.90);
+        targetHeight = 500; // Fixed height
+    }
+
+    scaleFactor = targetWidth / BASE_SIM_WIDTH;
+    simWidth = targetWidth;
+
+    // Graph below simulation inside canvas
+    graphWidth = simWidth;
+    // Calculate graph height based on remaining space in targetHeight
+    // Base Sim Height uses up some portion.. let's try to fit it all
+    // Or just let height be determined by scale and ensure it fits?
+
+    // Actually, let's fix height to targetHeight and scale contents to fit?
+    // Or just set canvasHeight to targetHeight and layout components inside.
+
+    // Let's stick to the scaling logic but constrain height
+    let calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+    let calculatedGraphHeight = Math.min(Math.floor(250 * scaleFactor), targetHeight - calculatedSimHeight - 20);
+
+    // If graph height is too small, we might need to reduce scale
+    if (calculatedGraphHeight < 100) {
+        // Scale is too big for height, recalculate based on height
+        // This serves as a "contain" fit
+        const maxContentHeight = targetHeight - 120; // 100px min for graph
+        const contentBaseHeight = BASE_HEIGHT;
+        // simplistic re-scale if needed, but width-based usually works fine for wide layouts
+    }
+
+    canvasWidth = simWidth;
+    canvasHeight = calculatedSimHeight + calculatedGraphHeight + 20;
+
+    // Ensure we don't exceed targetHeight (scrolling constraint)
+    if (canvasHeight > targetHeight && window.innerWidth > 900) {
+        // Re-calculate scale to fit height
+        const totalBaseHeight = BASE_HEIGHT + 250 + 20; // sim + graph + gap
+        // Max height available
+        const maxH = targetHeight;
+        scaleFactor = maxH / totalBaseHeight;
+
+        // Re-apply widths
+        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+        canvasWidth = simWidth;
+        canvasHeight = maxH;
+
+        // update heights
+        calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+        calculatedGraphHeight = maxH - calculatedSimHeight - 20;
+    }
+
+    graphX = 0;
+    graphY = calculatedSimHeight + 20;
+
+    // Update positions
     barrierY = Math.floor(BASE_BARRIER_Y * scaleFactor);
     screenY = Math.floor(BASE_SCREEN_Y * scaleFactor);
     sourceY = Math.floor(BASE_SOURCE_Y * scaleFactor);
@@ -485,7 +525,6 @@ function drawObserver(slit1X, slit2X) {
     pop();
 }
 
-// Horizontal barrier with rectangular slit cutouts
 function drawBarrier3D(slit1X, slit2X, waveColor) {
     push();
     const wallThickness = s(20);
@@ -498,62 +537,46 @@ function drawBarrier3D(slit1X, slit2X, waveColor) {
     const topCol = [barrierColor[0] + 30, barrierColor[1] + 30, barrierColor[2] + 30];
     const sideCol = [barrierColor[0] - 15, barrierColor[1] - 15, barrierColor[2] - 15];
 
-    // Simplified barrier drawing - just the main blocks with gaps
-    // No inner walls or "boxy" tunnel look
+    // Helper to draw a 3D cuboid
+    function drawCuboid(x, y, w, h, d) {
+        // Top face
+        fill(topCol[0], topCol[1], topCol[2]);
+        stroke(topCol[0] - 20, topCol[1] - 20, topCol[2] - 20);
+        strokeWeight(1);
+        beginShape();
+        vertex(x, y);
+        vertex(x + w, y);
+        vertex(x + w + d * 0.5, y - d * 0.5);
+        vertex(x + d * 0.5, y - d * 0.5);
+        endShape(CLOSE);
 
-    // 1. Draw the 3D top faces first (behind the front face)
-    fill(topCol[0], topCol[1], topCol[2]);
-    stroke(topCol[0] - 20, topCol[1] - 20, topCol[2] - 20);
-    strokeWeight(1);
+        // Front face
+        fill(frontCol[0], frontCol[1], frontCol[2]);
+        stroke(frontCol[0] - 30, frontCol[1] - 30, frontCol[2] - 30);
+        rect(x, y, w, h);
 
-    // Top face - left section
-    beginShape();
-    vertex(leftX, barrierY);
-    vertex(slit1X - scaledSlitWidth / 2, barrierY);
-    vertex(slit1X - scaledSlitWidth / 2 + depth3D * 0.5, barrierY - depth3D * 0.5);
-    vertex(leftX + depth3D * 0.5, barrierY - depth3D * 0.5);
-    endShape(CLOSE);
+        // Right side face (visible if we are on the left or looking right)
+        // For simple blocks, we always draw the right side for 3D effect?
+        // Actually, we should only draw the side if it's an end block or creates a gap.
 
-    // Top face - middle section
-    beginShape();
-    vertex(slit1X + scaledSlitWidth / 2, barrierY);
-    vertex(slit2X - scaledSlitWidth / 2, barrierY);
-    vertex(slit2X - scaledSlitWidth / 2 + depth3D * 0.5, barrierY - depth3D * 0.5);
-    vertex(slit1X + scaledSlitWidth / 2 + depth3D * 0.5, barrierY - depth3D * 0.5);
-    endShape(CLOSE);
+        fill(sideCol[0], sideCol[1], sideCol[2]);
+        stroke(sideCol[0] - 20, sideCol[1] - 20, sideCol[2] - 20);
+        beginShape();
+        vertex(x + w, y);
+        vertex(x + w + d * 0.5, y - d * 0.5);
+        vertex(x + w + d * 0.5, y + h - d * 0.5);
+        vertex(x + w, y + h);
+        endShape(CLOSE);
+    }
 
-    // Top face - right section
-    beginShape();
-    vertex(slit2X + scaledSlitWidth / 2, barrierY);
-    vertex(rightX, barrierY);
-    vertex(rightX + depth3D * 0.5, barrierY - depth3D * 0.5);
-    vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.5, barrierY - depth3D * 0.5);
-    endShape(CLOSE);
+    // 1. Left Cuboid (from left edge to slit 1 start)
+    drawCuboid(leftX, barrierY, slit1X - scaledSlitWidth / 2 - leftX, wallThickness, depth3D);
 
-    // 2. Draw the front faces
-    fill(frontCol[0], frontCol[1], frontCol[2]);
-    stroke(frontCol[0] - 30, frontCol[1] - 30, frontCol[2] - 30);
-    strokeWeight(1);
+    // 2. Middle Cuboid (between slits)
+    drawCuboid(slit1X + scaledSlitWidth / 2, barrierY, slit2X - scaledSlitWidth / 2 - (slit1X + scaledSlitWidth / 2), wallThickness, depth3D);
 
-    // Left section
-    rect(leftX, barrierY, slit1X - scaledSlitWidth / 2 - leftX, wallThickness);
-
-    // Middle section
-    rect(slit1X + scaledSlitWidth / 2, barrierY, slit2X - scaledSlitWidth / 2 - (slit1X + scaledSlitWidth / 2), wallThickness);
-
-    // Right section
-    rect(slit2X + scaledSlitWidth / 2, barrierY, rightX - (slit2X + scaledSlitWidth / 2), wallThickness);
-
-    // 3. Draw the Right side face of entire barrier
-    fill(sideCol[0], sideCol[1], sideCol[2]);
-    stroke(sideCol[0] - 20, sideCol[1] - 20, sideCol[2] - 20);
-    strokeWeight(1);
-    beginShape();
-    vertex(rightX, barrierY);
-    vertex(rightX + depth3D * 0.5, barrierY - depth3D * 0.5);
-    vertex(rightX + depth3D * 0.5, barrierY + wallThickness - depth3D * 0.5);
-    vertex(rightX, barrierY + wallThickness);
-    endShape(CLOSE);
+    // 3. Right Cuboid (from slit 2 end to right edge)
+    drawCuboid(slit2X + scaledSlitWidth / 2, barrierY, rightX - (slit2X + scaledSlitWidth / 2), wallThickness, depth3D);
 
     pop();
 }
@@ -650,37 +673,40 @@ function drawScreen3D(slit1X, slit2X, waveColor, simWavelength) {
 function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
     push();
 
-    const graphLeft = graphX + (isVertical ? s(40) : 0);
-    const graphRight = (isVertical ? canvasWidth - s(40) : width - s(40));
-    const graphTop = graphY + s(60);
-    const graphBottom = (isVertical ? canvasHeight - s(40) : height - s(60));
-    const graphMidX = graphLeft + s(60);
-    const slitExitY = barrierY + s(18);
+    // Force vertical layout params
+    const graphLeft = graphX + s(40);
+    const graphRight = canvasWidth - s(40);
+    const graphTop = graphY + s(40);
+    const graphBottom = canvasHeight - s(40);
+    const graphMidY = graphBottom; // Intensity 0 is at the bottom
+    const splitExitY = barrierY + s(18);
 
     // Graph background
     fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
     stroke(barrierColor[0], barrierColor[1], barrierColor[2], 100);
     strokeWeight(1);
-    rect(graphLeft - s(10), graphTop - s(20), graphRight - graphLeft + s(20), graphBottom - graphTop + s(40), s(8));
+    rect(graphLeft - s(10), graphTop - s(20), graphRight - graphLeft + s(20), graphBottom - graphTop + s(30), s(8));
 
     // Axis
     stroke(textColor[0], textColor[1], textColor[2], 150);
     strokeWeight(1);
-    line(graphMidX, graphTop, graphMidX, graphBottom);
-    line(graphMidX, graphBottom, graphRight - s(10), graphBottom);
+    // X-axis (Position)
+    line(graphLeft, graphBottom, graphRight, graphBottom);
+    // Y-axis (Intensity)
+    line(graphLeft, graphBottom, graphLeft, graphTop);
 
     // Axis labels
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textSize(s(10));
     textAlign(CENTER);
-    text("Intensity", (graphMidX + graphRight - s(10)) / 2, graphBottom + s(25));
+    text("Position on Screen", (graphLeft + graphRight) / 2, graphBottom + s(20));
 
     push();
-    translate(graphLeft + s(20), (graphTop + graphBottom) / 2);
+    translate(graphLeft - s(20), (graphTop + graphBottom) / 2);
     rotate(-HALF_PI);
     textAlign(CENTER);
-    text("Position on Screen", 0, 0);
+    text("Intensity", 0, 0);
     pop();
 
     // Draw intensity curve
@@ -689,8 +715,10 @@ function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
     strokeWeight(s(2.5));
 
     beginShape();
-    for (let py = graphTop; py <= graphBottom; py += 2) {
-        let screenXPos = map(py, graphTop, graphBottom, s(40), simWidth - s(40));
+    for (let px = graphLeft; px <= graphRight; px += 2) {
+        // Map graph X back to Simulation X (Screen Width)
+        // Ensure misalignment is minimized by mapping graph width to sim width
+        let screenXPos = map(px, graphLeft, graphRight, s(40), simWidth - s(40));
         let posFromCenter = screenXPos - simWidth / 2;
         let intensity;
 
@@ -702,8 +730,8 @@ function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
             intensity = exp(-pow(dist1 / bandWidth, 2)) + exp(-pow(dist2 / bandWidth, 2));
             intensity = constrain(intensity, 0, 1);
         } else {
-            let d1 = dist(screenXPos, screenY, slit1X, slitExitY);
-            let d2 = dist(screenXPos, screenY, slit2X, slitExitY);
+            let d1 = dist(screenXPos, screenY, slit1X, splitExitY);
+            let d2 = dist(screenXPos, screenY, slit2X, splitExitY);
             let pathDiff = d1 - d2;
             let phase = TWO_PI * pathDiff / simWavelength;
             intensity = pow(cos(phase / 2), 2);
@@ -718,8 +746,9 @@ function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
             intensity = constrain(intensity, 0, 1);
         }
 
-        let graphXVal = map(intensity, 0, 1, graphMidX + s(5), graphRight - s(20));
-        vertex(graphXVal, py);
+        // Map intensity (0-1) to Y position (Bottom to Top)
+        let graphYPos = map(intensity, 0, 1, graphBottom - s(2), graphTop + s(20));
+        vertex(px, graphYPos);
     }
     endShape();
 

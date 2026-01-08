@@ -73,7 +73,7 @@
         }
 
         .theme-toggle {
-            position: fixed;
+            position: absolute;
             top: 20px;
             right: 20px;
             width: 52px;
@@ -168,30 +168,24 @@
             transform: translateX(-3px);
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-            margin-top: 40px;
-        }
-
-        h1 {
-            font-weight: 700;
-            font-size: clamp(1.5rem, 4vw, 2.25rem);
-            color: var(--text-primary);
+        .simulation-wrapper {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .subtitle {
-            font-weight: 400;
-            font-size: 1rem;
-            color: var(--text-muted);
-            margin-top: 8px;
+            flex-direction: row;
+            gap: 24px;
+            width: 100%;
+            padding-left: 10%;
+            /* Left padding only */
+            padding-right: 20px;
+            /* Minimal right padding */
+            height: calc(100vh - 120px);
+            /* Fit screen minus header */
+            box-sizing: border-box;
+            align-items: flex-start;
         }
 
         #canvas-container {
+            flex-grow: 1;
+            height: 100%;
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 25px 80px var(--shadow-strong), 0 0 0 1px var(--border);
@@ -200,11 +194,60 @@
 
         .controls {
             display: flex;
+            flex-direction: column;
             gap: 16px;
-            margin-top: 28px;
-            flex-wrap: wrap;
-            justify-content: center;
-            max-width: 100%;
+            width: 20%;
+            /* Takes up the 20% area */
+            min-width: 260px;
+            flex-shrink: 0;
+            overflow-y: auto;
+            max-height: 100%;
+            padding-right: 4px;
+            /* Space for scrollbar */
+        }
+
+        /* Scrollbar for controls */
+        .controls::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background-color: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Adjust header to take up less space */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .simulation-wrapper {
+                flex-direction: column;
+                height: auto;
+                padding: 0 5%;
+            }
+
+            .controls {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-height: none;
+                overflow-y: visible;
+            }
+
+            #canvas-container {
+                height: 500px;
+                /* Fallback for mobile */
+                width: 100%;
+            }
         }
 
         .control-group {
@@ -542,31 +585,42 @@
         <p class="subtitle">Wave interference & quantum mechanics visualization</p>
     </div>
 
-    <div id="canvas-container"></div>
+    <div class="simulation-wrapper">
+        <div id="canvas-container">
+            <!-- p5.js canvas will be inserted here -->
+        </div>
 
-    <div class="controls">
-        <div class="control-group">
-            <label>Wavelength (nm)</label>
-            <input type="range" id="wavelengthSlider" min="380" max="780" value="550">
-            <span class="value-display" id="wavelengthValue">550</span>
-        </div>
-        <div class="control-group">
-            <label>Slit Separation</label>
-            <input type="range" id="slitSepSlider" min="30" max="150" value="80">
-            <span class="value-display" id="slitSepValue">80</span>
-        </div>
-        <div class="control-group">
-            <label>Wave Speed</label>
-            <input type="range" id="speedSlider" min="1" max="10" value="5">
-            <span class="value-display" id="speedValue">5</span>
-        </div>
-        <div class="control-group">
-            <label>Slit Width</label>
-            <input type="range" id="slitWidthSlider" min="5" max="40" value="15">
-            <span class="value-display" id="slitWidthValue">15</span>
-        </div>
-        <div class="control-group observer-control">
-            <button class="action-btn" id="observerBtn">👁 Observer OFF</button>
+        <div class="controls">
+            <div class="control-group">
+                <label>Wavelength</label>
+                <div class="value-display"><span id="wavelengthValue">550</span> nm</div>
+                <input type="range" id="wavelengthSlider" min="380" max="780" value="550">
+            </div>
+
+            <div class="control-group">
+                <label>Slit Separation</label>
+                <div class="value-display"><span id="slitSepValue">100</span></div>
+                <input type="range" id="slitSepSlider" min="50" max="250" value="100">
+            </div>
+
+            <div class="control-group">
+                <label>Wave Speed</label>
+                <div class="value-display"><span id="speedValue">2</span>x</div>
+                <input type="range" id="speedSlider" min="1" max="5" value="2" step="0.5">
+            </div>
+
+            <div class="control-group">
+                <label>Slit Width</label>
+                <div class="value-display"><span id="slitWidthValue">20</span></div>
+                <input type="range" id="slitWidthSlider" min="5" max="50" value="20">
+            </div>
+
+            <div class="control-group observer-control">
+                <label>Measurement</label>
+                <button id="observerBtn" class="action-btn">
+                    👁 Observer OFF
+                </button>
+            </div>
         </div>
     </div>
 

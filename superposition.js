@@ -28,42 +28,65 @@ let scaleFactor = 1;
 let isVertical = false; // New flag for layout mode
 
 function calculateDimensions() {
-    const containerWidth = window.innerWidth - 40;
+    // New layout logic:
+    // Controls take up 20% area on the right (min 260px)
+    // Left Padding is 10%
+    // Right padding is minimal (20px)
 
-    // Check for vertical layout (mobile/narrow screens)
-    isVertical = containerWidth < 900;
-
-    if (isVertical) {
-        // Vertical layout logic
-        scaleFactor = containerWidth / BASE_SIM_WIDTH;
-
-        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-
-        // In vertical mode, graph goes below simulation
-        graphWidth = simWidth; // Graph takes full width
-        let graphHeight = Math.floor(250 * scaleFactor);
-
-        canvasWidth = simWidth;
-        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor) + graphHeight + 20;
-
-        graphX = 0;
-        graphY = Math.floor(BASE_HEIGHT * scaleFactor) + 20;
-
-    } else {
-        // Horizontal layout logic (original)
-        if (containerWidth >= BASE_WIDTH) {
-            scaleFactor = 1;
-        } else {
-            scaleFactor = containerWidth / BASE_WIDTH;
-        }
-
-        canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
-        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-        graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
-        graphX = simWidth + Math.floor(30 * scaleFactor);
-        graphY = 0;
+    // Determine controls width based on CSS logic (20% or min 260px)
+    let controlsWidth = 0;
+    if (window.innerWidth > 900) {
+        controlsWidth = Math.max(window.innerWidth * 0.20, 260);
     }
+
+    const paddingLeft = window.innerWidth * 0.10;
+    const paddingRight = 20; // Minimal right padding
+    const gap = 24;
+
+    // Canvas width is remaining space
+    let targetWidth;
+    let targetHeight;
+
+    if (window.innerWidth > 900) {
+        targetWidth = Math.floor(window.innerWidth - paddingLeft - paddingRight - controlsWidth - gap);
+        targetHeight = window.innerHeight - 180; // height minus header/padding
+    } else {
+        // Mobile/Tablet: Stacked layout (90% width approx)
+        targetWidth = Math.floor(window.innerWidth * 0.90);
+        targetHeight = 500; // Fixed height
+    }
+
+    scaleFactor = targetWidth / BASE_SIM_WIDTH;
+    simWidth = targetWidth;
+
+    // Graph below simulation inside canvas
+    graphWidth = simWidth;
+    let calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+    let calculatedGraphHeight = Math.min(Math.floor(250 * scaleFactor), targetHeight - calculatedSimHeight - 20);
+
+    canvasWidth = simWidth;
+    canvasHeight = calculatedSimHeight + calculatedGraphHeight + 20;
+
+    // Ensure we don't exceed targetHeight (scrolling constraint)
+    if (canvasHeight > targetHeight && window.innerWidth > 900) {
+        // Re-calculate scale to fit height
+        const totalBaseHeight = BASE_HEIGHT + 250 + 20;
+        const maxH = targetHeight;
+
+        scaleFactor = maxH / totalBaseHeight;
+
+        // Re-apply widths
+        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+        canvasWidth = simWidth;
+        canvasHeight = maxH;
+
+        // update heights
+        calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+        calculatedGraphHeight = maxH - calculatedSimHeight - 20;
+    }
+
+    graphX = 0;
+    graphY = calculatedSimHeight + 20;
 }
 
 // Helper function to scale values
