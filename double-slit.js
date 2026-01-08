@@ -25,7 +25,9 @@ let canvasHeight = BASE_HEIGHT;
 let simWidth = BASE_SIM_WIDTH;
 let graphWidth = BASE_GRAPH_WIDTH;
 let graphX = simWidth + 30;
+let graphY = 0; // New variable for graph Y position
 let scaleFactor = 1;
+let isVertical = false; // New flag for layout mode
 
 // Scene positions (base values at scale 1.0)
 const BASE_BARRIER_Y = 180;
@@ -40,20 +42,40 @@ let sourceY = BASE_SOURCE_Y;
 function calculateDimensions() {
     const containerWidth = window.innerWidth - 40;
 
-    // Calculate scale factor based on available width
-    if (containerWidth >= BASE_WIDTH) {
-        scaleFactor = 1;
-    } else {
-        // Scale down proportionally
-        scaleFactor = containerWidth / BASE_WIDTH;
-    }
+    // Check for vertical layout (mobile/narrow screens)
+    isVertical = containerWidth < 900;
 
-    // Apply scaling to all dimensions
-    canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
-    canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-    simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-    graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
-    graphX = simWidth + Math.floor(30 * scaleFactor);
+    if (isVertical) {
+        // Vertical layout logic
+        scaleFactor = containerWidth / BASE_SIM_WIDTH;
+
+        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+
+        // In vertical mode, graph goes below simulation
+        graphWidth = simWidth; // Graph takes full width
+        let graphHeight = Math.floor(250 * scaleFactor);
+
+        canvasWidth = simWidth;
+        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor) + graphHeight + 20;
+
+        graphX = 0;
+        graphY = Math.floor(BASE_HEIGHT * scaleFactor) + 20;
+
+    } else {
+        // Horizontal layout logic (original)
+        if (containerWidth >= BASE_WIDTH) {
+            scaleFactor = 1;
+        } else {
+            scaleFactor = containerWidth / BASE_WIDTH;
+        }
+
+        canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
+        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+        graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
+        graphX = simWidth + Math.floor(30 * scaleFactor);
+        graphY = 0;
+    }
 
     // Update scene positions
     barrierY = Math.floor(BASE_BARRIER_Y * scaleFactor);
@@ -475,28 +497,14 @@ function drawBarrier3D(slit1X, slit2X, waveColor) {
     const frontCol = barrierColor;
     const topCol = [barrierColor[0] + 30, barrierColor[1] + 30, barrierColor[2] + 30];
     const sideCol = [barrierColor[0] - 15, barrierColor[1] - 15, barrierColor[2] - 15];
-    const innerCol = [barrierColor[0] - 25, barrierColor[1] - 25, barrierColor[2] - 25];
 
-    // Draw as one continuous barrier with rectangular cutouts for slits
+    // Simplified barrier drawing - just the main blocks with gaps
+    // No inner walls or "boxy" tunnel look
 
-    // Main barrier body (front face with cutouts)
-    fill(frontCol[0], frontCol[1], frontCol[2]);
-    stroke(frontCol[0] - 30, frontCol[1] - 30, frontCol[2] - 30);
-    strokeWeight(1);
-
-    // Draw barrier segments
-    // Left section
-    rect(leftX, barrierY, slit1X - scaledSlitWidth / 2 - leftX, wallThickness);
-
-    // Middle section (between slits)
-    rect(slit1X + scaledSlitWidth / 2, barrierY, slit2X - scaledSlitWidth / 2 - (slit1X + scaledSlitWidth / 2), wallThickness);
-
-    // Right section
-    rect(slit2X + scaledSlitWidth / 2, barrierY, rightX - (slit2X + scaledSlitWidth / 2), wallThickness);
-
-    // Draw 3D top face for all sections
+    // 1. Draw the 3D top faces first (behind the front face)
     fill(topCol[0], topCol[1], topCol[2]);
     stroke(topCol[0] - 20, topCol[1] - 20, topCol[2] - 20);
+    strokeWeight(1);
 
     // Top face - left section
     beginShape();
@@ -522,102 +530,21 @@ function drawBarrier3D(slit1X, slit2X, waveColor) {
     vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.5, barrierY - depth3D * 0.5);
     endShape(CLOSE);
 
-    // Top face of slit gaps (ceiling)
-    fill(innerCol[0] - 10, innerCol[1] - 10, innerCol[2] - 10);
+    // 2. Draw the front faces
+    fill(frontCol[0], frontCol[1], frontCol[2]);
+    stroke(frontCol[0] - 30, frontCol[1] - 30, frontCol[2] - 30);
+    strokeWeight(1);
 
-    // Slit 1 ceiling
-    beginShape();
-    vertex(slit1X - scaledSlitWidth / 2, barrierY);
-    vertex(slit1X + scaledSlitWidth / 2, barrierY);
-    vertex(slit1X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    vertex(slit1X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    endShape(CLOSE);
+    // Left section
+    rect(leftX, barrierY, slit1X - scaledSlitWidth / 2 - leftX, wallThickness);
 
-    // Slit 2 ceiling
-    beginShape();
-    vertex(slit2X - scaledSlitWidth / 2, barrierY);
-    vertex(slit2X + scaledSlitWidth / 2, barrierY);
-    vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    vertex(slit2X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    endShape(CLOSE);
+    // Middle section
+    rect(slit1X + scaledSlitWidth / 2, barrierY, slit2X - scaledSlitWidth / 2 - (slit1X + scaledSlitWidth / 2), wallThickness);
 
-    // Draw inner walls of slit cutouts (the sides of the rectangular cutouts)
-    fill(innerCol[0], innerCol[1], innerCol[2]);
-    stroke(innerCol[0] - 10, innerCol[1] - 10, innerCol[2] - 10);
+    // Right section
+    rect(slit2X + scaledSlitWidth / 2, barrierY, rightX - (slit2X + scaledSlitWidth / 2), wallThickness);
 
-    // Slit 1 - left inner wall
-    beginShape();
-    vertex(slit1X - scaledSlitWidth / 2, barrierY);
-    vertex(slit1X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    vertex(slit1X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    vertex(slit1X - scaledSlitWidth / 2, barrierY + wallThickness);
-    endShape(CLOSE);
-
-    // Slit 1 - right inner wall
-    beginShape();
-    vertex(slit1X + scaledSlitWidth / 2, barrierY);
-    vertex(slit1X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    vertex(slit1X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    vertex(slit1X + scaledSlitWidth / 2, barrierY + wallThickness);
-    endShape(CLOSE);
-
-    // Slit 2 - left inner wall
-    beginShape();
-    vertex(slit2X - scaledSlitWidth / 2, barrierY);
-    vertex(slit2X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    vertex(slit2X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    vertex(slit2X - scaledSlitWidth / 2, barrierY + wallThickness);
-    endShape(CLOSE);
-
-    // Slit 2 - right inner wall
-    beginShape();
-    vertex(slit2X + scaledSlitWidth / 2, barrierY);
-    vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
-    vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    vertex(slit2X + scaledSlitWidth / 2, barrierY + wallThickness);
-    endShape(CLOSE);
-
-    // Draw back edge of slits (floor of the cutout)
-    fill(innerCol[0] - 10, innerCol[1] - 10, innerCol[2] - 10);
-
-    // Slit 1 floor
-    beginShape();
-    vertex(slit1X - scaledSlitWidth / 2, barrierY + wallThickness);
-    vertex(slit1X + scaledSlitWidth / 2, barrierY + wallThickness);
-    vertex(slit1X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    vertex(slit1X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    endShape(CLOSE);
-
-    // Slit 2 floor
-    beginShape();
-    vertex(slit2X - scaledSlitWidth / 2, barrierY + wallThickness);
-    vertex(slit2X + scaledSlitWidth / 2, barrierY + wallThickness);
-    vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    vertex(slit2X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY + wallThickness - depth3D * 0.3);
-    endShape(CLOSE);
-
-    // Slit glow effect
-    // Slit glow effect removed
-    /*
-    if (!observerActive) {
-        noFill();
-        for (let i = 0; i < 4; i++) {
-            let alpha = map(i, 0, 4, 200, 0);
-            stroke(waveColor[0], waveColor[1], waveColor[2], alpha);
-            strokeWeight(s(3) - i * s(0.6));
-
-            // Slit 1 glow
-            rect(slit1X - scaledSlitWidth / 2 + s(2), barrierY + s(2),
-                scaledSlitWidth - s(4), wallThickness - s(4), s(2));
-
-            // Slit 2 glow
-            rect(slit2X - scaledSlitWidth / 2 + s(2), barrierY + s(2),
-                scaledSlitWidth - s(4), wallThickness - s(4), s(2));
-        }
-    }
-    */
-
-    // Right side face of entire barrier
+    // 3. Draw the Right side face of entire barrier
     fill(sideCol[0], sideCol[1], sideCol[2]);
     stroke(sideCol[0] - 20, sideCol[1] - 20, sideCol[2] - 20);
     strokeWeight(1);
@@ -723,10 +650,10 @@ function drawScreen3D(slit1X, slit2X, waveColor, simWavelength) {
 function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
     push();
 
-    const graphLeft = graphX;
-    const graphRight = width - s(40);
-    const graphTop = s(60);
-    const graphBottom = height - s(60);
+    const graphLeft = graphX + (isVertical ? s(40) : 0);
+    const graphRight = (isVertical ? canvasWidth - s(40) : width - s(40));
+    const graphTop = graphY + s(60);
+    const graphBottom = (isVertical ? canvasHeight - s(40) : height - s(60));
     const graphMidX = graphLeft + s(60);
     const slitExitY = barrierY + s(18);
 

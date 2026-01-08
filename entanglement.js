@@ -21,25 +21,47 @@ let canvasHeight = BASE_HEIGHT;
 let simWidth = BASE_SIM_WIDTH;
 let graphWidth = BASE_GRAPH_WIDTH;
 let graphX = simWidth + 30;
+let graphY = 0; // New variable for graph Y position
 let scaleFactor = 1;
+let isVertical = false; // New flag for layout mode
 
 function calculateDimensions() {
     const containerWidth = window.innerWidth - 40;
 
-    // Calculate scale factor based on available width
-    if (containerWidth >= BASE_WIDTH) {
-        scaleFactor = 1;
-    } else {
-        // Scale down proportionally
-        scaleFactor = containerWidth / BASE_WIDTH;
-    }
+    // Check for vertical layout (mobile/narrow screens)
+    isVertical = containerWidth < 900;
 
-    // Apply scaling to all dimensions
-    canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
-    canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-    simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-    graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
-    graphX = simWidth + Math.floor(30 * scaleFactor);
+    if (isVertical) {
+        // Vertical layout logic
+        scaleFactor = containerWidth / BASE_SIM_WIDTH;
+
+        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+
+        // In vertical mode, graph goes below simulation
+        graphWidth = simWidth; // Graph takes full width
+        let graphHeight = Math.floor(250 * scaleFactor);
+
+        canvasWidth = simWidth;
+        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor) + graphHeight + 20;
+
+        graphX = 0;
+        graphY = Math.floor(BASE_HEIGHT * scaleFactor) + 20;
+
+    } else {
+        // Horizontal layout logic (original)
+        if (containerWidth >= BASE_WIDTH) {
+            scaleFactor = 1;
+        } else {
+            scaleFactor = containerWidth / BASE_WIDTH;
+        }
+
+        canvasWidth = Math.floor(BASE_WIDTH * scaleFactor);
+        canvasHeight = Math.floor(BASE_HEIGHT * scaleFactor);
+        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
+        graphWidth = Math.floor(BASE_GRAPH_WIDTH * scaleFactor);
+        graphX = simWidth + Math.floor(30 * scaleFactor);
+        graphY = 0;
+    }
 }
 
 // Helper function to scale values
@@ -389,10 +411,10 @@ function drawDistanceLabels(scaledDistance) {
 function drawCorrelationChart() {
     push();
 
-    const graphLeft = graphX;
-    const graphRight = width - s(40);
-    const graphTop = s(60);
-    const graphBottom = height - s(60);
+    const graphLeft = graphX + (isVertical ? s(40) : 0);
+    const graphRight = (isVertical ? canvasWidth - s(40) : width - s(40));
+    const graphTop = graphY + s(60);
+    const graphBottom = (isVertical ? canvasHeight - s(40) : height - s(60));
     const graphMidX = (graphLeft + graphRight) / 2;
 
     // Background
