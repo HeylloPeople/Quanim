@@ -32,8 +32,8 @@ function calculateDimensions() {
     if (containerWidth >= BASE_WIDTH) {
         scaleFactor = 1;
     } else {
-        // Scale down proportionally, with a minimum scale
-        scaleFactor = Math.max(containerWidth / BASE_WIDTH, 0.5);
+        // Scale down proportionally
+        scaleFactor = containerWidth / BASE_WIDTH;
     }
 
     // Apply scaling to all dimensions

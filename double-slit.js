@@ -44,8 +44,8 @@ function calculateDimensions() {
     if (containerWidth >= BASE_WIDTH) {
         scaleFactor = 1;
     } else {
-        // Scale down proportionally, with a minimum scale
-        scaleFactor = Math.max(containerWidth / BASE_WIDTH, 0.5);
+        // Scale down proportionally
+        scaleFactor = containerWidth / BASE_WIDTH;
     }
 
     // Apply scaling to all dimensions
@@ -197,6 +197,11 @@ function setup() {
             this.classList.toggle('active', observerActive);
         });
     }
+}
+
+function windowResized() {
+    calculateDimensions();
+    resizeCanvas(canvasWidth, canvasHeight);
 }
 
 function draw() {
@@ -416,7 +421,7 @@ function drawObserver(slit1X, slit2X) {
     const eyeSize = s(40);
 
     // Glow effect
-    let pulseSize = 1 + sin(time * 3) * 0.1;
+    let pulseSize = 1; // Removed pulsation: + sin(time * 3) * 0.1;
 
     for (let r = eyeSize * 1.5; r > 0; r -= s(5)) {
         let alpha = map(r, 0, eyeSize * 1.5, 80, 0);
@@ -517,6 +522,25 @@ function drawBarrier3D(slit1X, slit2X, waveColor) {
     vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.5, barrierY - depth3D * 0.5);
     endShape(CLOSE);
 
+    // Top face of slit gaps (ceiling)
+    fill(innerCol[0] - 10, innerCol[1] - 10, innerCol[2] - 10);
+
+    // Slit 1 ceiling
+    beginShape();
+    vertex(slit1X - scaledSlitWidth / 2, barrierY);
+    vertex(slit1X + scaledSlitWidth / 2, barrierY);
+    vertex(slit1X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
+    vertex(slit1X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
+    endShape(CLOSE);
+
+    // Slit 2 ceiling
+    beginShape();
+    vertex(slit2X - scaledSlitWidth / 2, barrierY);
+    vertex(slit2X + scaledSlitWidth / 2, barrierY);
+    vertex(slit2X + scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
+    vertex(slit2X - scaledSlitWidth / 2 + depth3D * 0.3, barrierY - depth3D * 0.3);
+    endShape(CLOSE);
+
     // Draw inner walls of slit cutouts (the sides of the rectangular cutouts)
     fill(innerCol[0], innerCol[1], innerCol[2]);
     stroke(innerCol[0] - 10, innerCol[1] - 10, innerCol[2] - 10);
@@ -573,6 +597,8 @@ function drawBarrier3D(slit1X, slit2X, waveColor) {
     endShape(CLOSE);
 
     // Slit glow effect
+    // Slit glow effect removed
+    /*
     if (!observerActive) {
         noFill();
         for (let i = 0; i < 4; i++) {
@@ -589,6 +615,7 @@ function drawBarrier3D(slit1X, slit2X, waveColor) {
                 scaledSlitWidth - s(4), wallThickness - s(4), s(2));
         }
     }
+    */
 
     // Right side face of entire barrier
     fill(sideCol[0], sideCol[1], sideCol[2]);
