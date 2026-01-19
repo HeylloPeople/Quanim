@@ -28,62 +28,25 @@ let scaleFactor = 1;
 let isVertical = false; // New flag for layout mode
 
 function calculateDimensions() {
-    // New layout logic:
-    // Controls take up 20% area on the right (min 260px)
-    // Left Padding is 10%
-    // Right padding is minimal (20px)
+    // Layout: Controls are now below the canvas
+    // Canvas takes up to 900px width, centered
 
-    // Determine controls width based on CSS logic (20% or min 260px)
-    let controlsWidth = 0;
-    if (window.innerWidth > 900) {
-        controlsWidth = Math.max(window.innerWidth * 0.20, 260);
-    }
-
-    const paddingLeft = window.innerWidth * 0.10;
-    const paddingRight = 20; // Minimal right padding
-    const gap = 24;
-
-    // Canvas width is remaining space
-    let targetWidth;
-    let targetHeight;
-
-    if (window.innerWidth > 900) {
-        targetWidth = Math.floor(window.innerWidth - paddingLeft - paddingRight - controlsWidth - gap);
-        targetHeight = window.innerHeight - 180; // height minus header/padding
-    } else {
-        // Mobile/Tablet: Stacked layout (90% width approx)
-        targetWidth = Math.floor(window.innerWidth * 0.90);
-        targetHeight = 500; // Fixed height
-    }
+    const padding = 40;
+    const container = document.getElementById('canvas-container');
+    const containerWidth = container ? container.offsetWidth : window.innerWidth - padding;
+    let targetWidth = Math.min(containerWidth, 960);
 
     scaleFactor = targetWidth / BASE_SIM_WIDTH;
     simWidth = targetWidth;
 
     // Graph below simulation inside canvas
     graphWidth = simWidth;
+
     let calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-    let calculatedGraphHeight = Math.min(Math.floor(250 * scaleFactor), targetHeight - calculatedSimHeight - 20);
+    let calculatedGraphHeight = Math.floor(200 * scaleFactor);
 
     canvasWidth = simWidth;
-    canvasHeight = calculatedSimHeight + calculatedGraphHeight + 20;
-
-    // Ensure we don't exceed targetHeight (scrolling constraint)
-    if (canvasHeight > targetHeight && window.innerWidth > 900) {
-        // Re-calculate scale to fit height
-        const totalBaseHeight = BASE_HEIGHT + 250 + 20;
-        const maxH = targetHeight;
-
-        scaleFactor = maxH / totalBaseHeight;
-
-        // Re-apply widths
-        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-        canvasWidth = simWidth;
-        canvasHeight = maxH;
-
-        // update heights
-        calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-        calculatedGraphHeight = maxH - calculatedSimHeight - 20;
-    }
+    canvasHeight = calculatedSimHeight + calculatedGraphHeight + Math.floor(60 * scaleFactor);
 
     graphX = 0;
     graphY = calculatedSimHeight + 20;
@@ -192,7 +155,7 @@ function draw() {
 function drawParticle() {
     push();
     const centerX = simWidth / 2;
-    const centerY = height / 2;
+    const centerY = graphY / 2;
 
     if (!isMeasured) {
         // Superposition state - show both possibilities
@@ -341,11 +304,11 @@ function drawStateLabels() {
 function drawProbabilityGraph() {
     push();
 
-    const graphLeft = graphX + (isVertical ? s(40) : 0);
-    const graphRight = (isVertical ? canvasWidth - s(40) : width - s(40));
-    const graphTop = graphY + s(80);
-    const graphBottom = (isVertical ? canvasHeight - s(40) : height - s(80));
-    const graphMidX = (graphLeft + graphRight) / 2;
+    const graphLeft = s(20);
+    const graphRight = canvasWidth - s(20);
+    const graphTop = graphY + s(20);
+    const graphBottom = canvasHeight - s(40);
+    const graphMidX = canvasWidth / 2;
 
     // Graph background
     fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
@@ -401,9 +364,9 @@ function drawProbabilityGraph() {
     textSize(s(11));
     fill(textColor[0], textColor[1], textColor[2], 180);
     if (isMeasured) {
-        text("State: Measured", graphMidX, graphTop + s(20));
+        text("State: Measured", graphMidX, graphTop + s(5));
     } else {
-        text("State: Superposition", graphMidX, graphTop + s(20));
+        text("State: Superposition", graphMidX, graphTop + s(5));
     }
 
     pop();

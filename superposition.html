@@ -6,476 +6,139 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quantum Superposition Simulation - Quanim</title>
     <meta name="description"
-        content="Interactive quantum superposition simulation. Explore how particles exist in multiple states simultaneously until measured.">
+        content="Interactive quantum superposition simulation. Observe a particle exist in multiple states until measurement collapses the wavefunction.">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --bg-primary: #fafbfc;
-            --bg-secondary: rgba(255, 255, 255, 0.8);
-            --bg-tertiary: rgba(255, 255, 255, 0.95);
-            --text-primary: #0f172a;
-            --text-secondary: #334155;
-            --text-muted: #64748b;
-            --accent-primary: #6366f1;
-            --accent-secondary: #8b5cf6;
-            --border: rgba(99, 102, 241, 0.2);
-            --border-hover: rgba(99, 102, 241, 0.4);
-            --shadow: rgba(99, 102, 241, 0.08);
-            --shadow-strong: rgba(99, 102, 241, 0.15);
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.9);
-            --value-color: var(--accent-primary);
-            --gradient-start: #ddd6fe;
-            --gradient-end: #c4b5fd;
-        }
-
-        [data-theme="dark"] {
-            --bg-primary: #0f0f1a;
-            --bg-secondary: rgba(30, 30, 50, 0.8);
-            --bg-tertiary: rgba(40, 40, 65, 0.95);
-            --text-primary: #f1f5f9;
-            --text-secondary: #cbd5e1;
-            --text-muted: #94a3b8;
-            --accent-primary: #818cf8;
-            --accent-secondary: #a78bfa;
-            --border: rgba(139, 92, 246, 0.25);
-            --border-hover: rgba(139, 92, 246, 0.5);
-            --shadow: rgba(139, 92, 246, 0.1);
-            --shadow-strong: rgba(139, 92, 246, 0.2);
-            --glass-bg: rgba(30, 30, 50, 0.7);
-            --glass-border: rgba(60, 60, 100, 0.5);
-            --value-color: var(--accent-primary);
-            --gradient-start: #2e1065;
-            --gradient-end: #4c1d95;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ═══════════════════════════════════════════════════════════════════
+           Superposition Page Specific Styles
+           ═══════════════════════════════════════════════════════════════════ */
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 24px;
+        }
+
+        .page-container {
+            width: 100%;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            margin-top: 60px;
+            animation: fadeInDown 0.6s ease both;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
             color: var(--text-primary);
-            transition: all 0.4s ease;
+            margin-bottom: 8px;
         }
 
-        .theme-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 52px;
-            height: 28px;
-            border-radius: 14px;
-            border: 2px solid var(--border);
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            cursor: pointer;
-            padding: 2px;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .theme-toggle:hover {
-            border-color: var(--border-hover);
-            transform: scale(1.05);
-        }
-
-        .theme-toggle::before {
-            content: '';
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            left: 3px;
-            top: 3px;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 8px var(--shadow-strong);
-        }
-
-        [data-theme="dark"] .theme-toggle::before {
-            transform: translateX(24px);
-        }
-
-        .theme-toggle .icon {
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            stroke: var(--text-muted);
-            fill: none;
-            stroke-width: 1.5;
-            transition: opacity 0.3s ease;
-        }
-
-        .theme-toggle .icon-sun {
-            left: 5px;
-            opacity: 1;
-        }
-
-        .theme-toggle .icon-moon {
-            right: 5px;
-            opacity: 0.4;
-        }
-
-        [data-theme="dark"] .theme-toggle .icon-sun {
-            opacity: 0.4;
-        }
-
-        [data-theme="dark"] .theme-toggle .icon-moon {
-            opacity: 1;
-        }
-
-        .back-link {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
+        .header .subtitle {
+            font-size: 0.95rem;
             color: var(--text-muted);
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .back-link:hover {
-            color: var(--text-primary);
-            border-color: var(--border-hover);
-            transform: translateX(-3px);
         }
 
         .simulation-wrapper {
             display: flex;
-            flex-direction: row;
-            gap: 24px;
+            flex-direction: column;
+            gap: 20px;
             width: 100%;
-            padding-left: 10%;
-            /* Left padding only */
-            padding-right: 20px;
-            /* Minimal right padding */
-            height: calc(100vh - 120px);
-            /* Fit screen minus header */
-            box-sizing: border-box;
-            align-items: flex-start;
+            align-items: center;
+            animation: fadeInUp 0.6s ease 0.1s both;
         }
 
         #canvas-container {
-            flex-grow: 1;
-            height: 100%;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 25px 80px var(--shadow-strong), 0 0 0 1px var(--border);
-            background: var(--bg-primary);
+            margin-bottom: 16px;
         }
 
         .controls {
             display: flex;
-            flex-direction: column;
-            gap: 16px;
-            width: 20%;
-            /* Takes up the 20% area */
-            min-width: 260px;
-            flex-shrink: 0;
-            overflow-y: auto;
-            max-height: 100%;
-            padding-right: 4px;
-        }
-
-        /* Scrollbar for controls */
-        .controls::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .controls::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .controls::-webkit-scrollbar-thumb {
-            background-color: var(--border);
-            border-radius: 3px;
-        }
-
-        /* Adjust header */
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            margin-top: 20px;
-        }
-
-        @media (max-width: 900px) {
-            .simulation-wrapper {
-                flex-direction: column;
-                height: auto;
-                padding: 0 5%;
-            }
-
-            .controls {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
-                max-height: none;
-                overflow-y: visible;
-            }
-
-            #canvas-container {
-                height: 500px;
-                width: 100%;
-            }
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
         }
 
         .control-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 18px 24px;
-            border-radius: 16px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px var(--shadow);
-            transition: all 0.3s ease;
-        }
-
-        .control-group:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 16px 48px var(--shadow-strong);
-            border-color: var(--border-hover);
-        }
-
-        .control-group label {
-            font-weight: 500;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
+            flex: 1;
+            min-width: 100px;
+            max-width: 200px;
         }
 
         .control-group input[type="range"] {
             width: 120px;
-            height: 6px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: var(--border);
-            border-radius: 3px;
-            outline: none;
-            border: none;
-            cursor: pointer;
         }
 
-        .control-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            cursor: pointer;
-            box-shadow: 0 2px 10px var(--shadow-strong);
-            margin-top: -7px;
-        }
-
-        .control-group input[type="range"]::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            cursor: pointer;
-            border: none;
-        }
-
-        .value-display {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--value-color);
-        }
-
-        .action-btn {
-            padding: 14px 32px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            font-family: 'Inter', sans-serif;
-            border: none;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: var(--glass-bg);
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px var(--shadow-strong);
-        }
-
-        .action-btn.primary {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            color: white;
-            border: none;
-            box-shadow: 0 4px 20px var(--shadow-strong);
-        }
-
-        .action-btn.primary:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 30px var(--shadow-strong);
-        }
-
+        /* Info Panel */
         .info-panel {
             margin-top: 32px;
-            max-width: 900px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 12px 40px var(--shadow);
-            overflow: hidden;
+            width: 100%;
+            animation: fadeInUp 0.6s ease 0.2s both;
         }
 
-        .info-header {
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            padding: 20px 28px;
-            color: white;
-        }
-
-        .info-header h2 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .info-header p {
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        .info-content {
-            padding: 28px;
-        }
-
-        .info-content h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            margin-top: 20px;
-        }
-
-        .info-content h3:first-child {
-            margin-top: 0;
-        }
-
-        .info-content p {
-            font-size: 0.925rem;
-            line-height: 1.8;
-            color: var(--text-secondary);
-            margin-bottom: 16px;
-        }
-
-        .info-content strong {
-            color: var(--text-primary);
-            font-weight: 600;
-        }
-
-        .info-content .highlight {
-            color: var(--accent-primary);
-            font-weight: 600;
-        }
-
-        .equation-box {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+        /* Quote box */
+        .quote-box {
+            background: var(--bg-tertiary);
+            border-left: 4px solid var(--text-primary);
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
             padding: 16px 20px;
-            text-align: center;
-            margin: 16px 0;
-            font-family: 'Times New Roman', serif;
+            margin: 20px 0;
+            font-style: italic;
         }
 
-        .equation-box .equation {
-            font-size: 1.3rem;
-            color: var(--text-primary);
-        }
-
-        .equation-box .description {
-            font-size: 0.8rem;
+        .quote-box .author {
+            font-style: normal;
+            font-size: 0.85rem;
             color: var(--text-muted);
             margin-top: 8px;
-            font-family: 'Inter', sans-serif;
         }
 
-        .concept-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin: 20px 0;
+        /* State indicator */
+        .state-indicator {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            padding: 20px 28px;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border);
         }
 
-        .concept-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .concept-card .icon {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-        }
-
-        .concept-card h4 {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        .concept-card p {
-            font-size: 0.8rem;
+        .state-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
             color: var(--text-muted);
-            margin: 0;
+        }
+
+        .state-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .state-dot.up {
+            background: #3b82f6;
+        }
+
+        .state-dot.down {
+            background: #f97316;
         }
 
         /* Responsive */
-        @media screen and (max-width: 1024px) {
-            #canvas-container {
-                width: 100%;
-                max-width: 100%;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            #canvas-container canvas {
-                width: 100%;
-                height: auto;
-            }
-        }
-
-        @media screen and (max-width: 768px) {
+        @media (max-width: 768px) {
             body {
                 padding: 16px;
             }
@@ -484,32 +147,42 @@
                 margin-top: 50px;
             }
 
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
             .controls {
-                gap: 12px;
+                flex-wrap: wrap;
+                gap: 10px;
             }
 
             .control-group {
-                flex: 1;
-                min-width: 130px;
+                flex: 1 1 calc(50% - 10px);
+                min-width: 140px;
+                max-width: none;
+            }
+
+            .control-group input[type="range"] {
+                width: 100%;
             }
 
             .info-panel {
-                margin: 24px 8px;
+                margin: 24px 0;
             }
 
-            .concept-grid {
-                grid-template-columns: 1fr;
+            .state-indicator {
+                flex-wrap: wrap;
+                gap: 16px;
             }
         }
 
-        @media screen and (max-width: 480px) {
-            .back-link {
-                padding: 8px 14px;
-                font-size: 0.8rem;
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.25rem;
             }
 
-            h1 {
-                font-size: 1.25rem;
+            .control-group {
+                flex: 1 1 100%;
             }
         }
     </style>
@@ -537,109 +210,101 @@
 
     <div class="header">
         <h1>⚛️ Quantum Superposition</h1>
-        <p class="subtitle">A particle exists in multiple states until observed</p>
+        <p class="subtitle">Schrödinger's cat and wavefunction collapse</p>
     </div>
 
-    <div class="simulation-wrapper">
-        <div id="canvas-container">
-            <!-- p5.js canvas will be inserted here -->
+    <div class="page-container">
+        <div class="simulation-wrapper">
+            <div id="canvas-container">
+                <!-- p5.js canvas will be inserted here -->
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Spin Up Probability</label>
+                    <div class="value-display"><span id="probValue">50</span>%</div>
+                    <input type="range" id="probSlider" min="0" max="100" value="50">
+                </div>
+
+                <div class="control-group">
+                    <label>Measure</label>
+                    <button id="measureBtn" class="action-btn">
+                        📏 Measure State
+                    </button>
+                </div>
+
+                <div class="control-group">
+                    <label>Reset</label>
+                    <button id="resetBtn" class="action-btn">
+                        🔄 Reset
+                    </button>
+                </div>
+            </div>
         </div>
 
-        <div class="controls">
-            <div class="control-group">
-                <label>Basis State H |0⟩</label>
-                <div class="value-display" style="color: var(--accent-primary)"><span id="coeffHValue">0.71</span></div>
-                <input type="range" id="coeffHSlider" min="0" max="100" value="71">
+        <div class="info-panel">
+            <div class="info-header">
+                <h2>Understanding Quantum Superposition</h2>
+                <p>Where particles exist in all possible states at once</p>
             </div>
 
-            <div class="control-group">
-                <label>Basis State V |1⟩</label>
-                <div class="value-display" style="color: var(--accent-secondary)"><span id="coeffVValue">0.71</span>
+            <div class="info-content">
+                <h3>🐱 Schrödinger's Cat</h3>
+                <p>
+                    In 1935, physicist Erwin Schrödinger proposed a famous thought experiment: imagine a cat in a
+                    sealed box with a radioactive atom that has a 50% chance of decaying. If the atom decays, a
+                    mechanism releases poison, killing the cat. According to quantum mechanics, until someone opens
+                    the box and observes, the atom exists in a <span class="highlight">superposition</span> of
+                    both decayed and not-decayed states — and therefore the cat is both
+                    <strong>alive and dead simultaneously</strong>!
+                </p>
+
+                <div class="quote-box">
+                    <p>"One can even set up quite ridiculous cases. A cat is penned up in a steel chamber..."</p>
+                    <div class="author">— Erwin Schrödinger, 1935</div>
                 </div>
-                <input type="range" id="coeffVSlider" min="0" max="100" value="71">
+
+                <h3>🎲 The Measurement Problem</h3>
+                <p>
+                    Quantum particles genuinely exist in multiple states until <strong>measurement</strong> forces
+                    them to "choose." This isn't just uncertainty about which state they're in — they're
+                    mathematically in <em>all states at once</em>, with each state having a certain probability
+                    amplitude. Measurement causes what physicists call <span class="highlight">wavefunction
+                        collapse</span>.
+                </p>
+
+                <h3>⚛️ What You're Seeing</h3>
+                <p>
+                    The simulation shows a quantum spin particle with two possible states: <strong>spin up (↑)</strong>
+                    and <strong>spin down (↓)</strong>. Before measurement, the particle exists in a superposition
+                    of both states, visualized as overlapping probability clouds. The slider lets you adjust the
+                    probability of measuring spin up. When you click "Measure," the wavefunction collapses to one
+                    definite state based on these probabilities.
+                </p>
+
+                <h3>🔮 Quantum Computing</h3>
+                <p>
+                    Superposition is the foundation of quantum computing. While classical bits are either 0 or 1,
+                    quantum bits (<strong>qubits</strong>) can be in superposition of both states
+                    simultaneously. This allows quantum computers to explore many solutions in parallel, enabling
+                    exponential speedups for certain problems like factoring large numbers or simulating molecules.
+                </p>
             </div>
 
-            <div class="control-group">
-                <div class="value-display" style="font-size: 0.9rem; margin-bottom: 8px;">Action</div>
-                <button id="measureBtn" class="action-btn primary">
-                    Measure State
-                </button>
+            <div class="state-indicator">
+                <div class="state-item"><span class="state-dot up"></span> Spin Up |↑⟩</div>
+                <div class="state-item"><span class="state-dot down"></span> Spin Down |↓⟩</div>
             </div>
-
-            <div class="control-group">
-                <div class="value-display" style="font-size: 0.9rem; margin-bottom: 8px;">Reset</div>
-                <button id="resetBtn" class="action-btn">
-                    Reset
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="info-panel">
-        <div class="info-header">
-            <h2>Understanding Quantum Superposition</h2>
-            <p>The particle is both here and there — until you look</p>
-        </div>
-
-        <div class="info-content">
-            <h3>🐱 Schrödinger's Cat</h3>
-            <p>
-                In 1935, physicist <strong>Erwin Schrödinger</strong> proposed his famous thought experiment to
-                illustrate the strangeness of quantum superposition. Imagine a cat in a sealed box with a radioactive
-                atom that has a 50% chance of decaying. If it decays, poison is released, killing the cat. According
-                to quantum mechanics, until we open the box and look, the atom exists in a <span
-                    class="highlight">superposition
-                    of decayed and not-decayed</span> — and so, absurdly, the cat is simultaneously alive AND dead!
-            </p>
-
-            <div class="equation-box">
-                <div class="equation">|ψ⟩ = α|↑⟩ + β|↓⟩</div>
-                <div class="description">The quantum state is a superposition of spin-up and spin-down, where |α|² and
-                    |β|² are the measurement probabilities</div>
-            </div>
-
-            <h3>📊 What the Math Means</h3>
-            <p>
-                In this simulation, |↑⟩ represents "spin up" and |↓⟩ represents "spin down." The coefficients α and β
-                are <strong>probability amplitudes</strong> — complex numbers whose squared magnitudes give the
-                probability of measuring each state. When you adjust the slider, you're changing the value of |α|².
-                The particle genuinely exists in <em>both states at once</em> until measurement forces it to "choose."
-            </p>
-
-            <div class="concept-grid">
-                <div class="concept-card">
-                    <div class="icon">🌀</div>
-                    <h4>Superposition</h4>
-                    <p>Particle in multiple states simultaneously</p>
-                </div>
-                <div class="concept-card">
-                    <div class="icon">📍</div>
-                    <h4>Measurement</h4>
-                    <p>Forces collapse to a single definite state</p>
-                </div>
-                <div class="concept-card">
-                    <div class="icon">🎲</div>
-                    <h4>Probability</h4>
-                    <p>Only probabilities are predictable, not outcomes</p>
-                </div>
-            </div>
-
-            <h3>🧠 Interpretations</h3>
-            <p>
-                The <strong>Copenhagen interpretation</strong> says the wavefunction is a complete description of
-                reality, and measurement causes it to "collapse." The <strong>Many-Worlds interpretation</strong>
-                suggests the universe actually splits — in one branch you measure spin up, in another spin down, and
-                both yous continue existing! Neither interpretation has been proven definitively correct, which is what
-                makes quantum mechanics so philosophically fascinating.
-            </p>
         </div>
     </div>
 
     <script src="superposition.js"></script>
     <script>
+        // Theme toggle functionality
         const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
 
+        // Check for saved theme preference or default to light
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             html.setAttribute('data-theme', 'dark');
@@ -650,10 +315,12 @@
             if (currentTheme === 'dark') {
                 html.removeAttribute('data-theme');
                 localStorage.setItem('theme', 'light');
+                // Update p5.js colors
                 if (typeof updateColors === 'function') updateColors('light');
             } else {
                 html.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
+                // Update p5.js colors
                 if (typeof updateColors === 'function') updateColors('dark');
             }
         });

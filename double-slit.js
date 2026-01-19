@@ -40,79 +40,25 @@ let screenY = BASE_SCREEN_Y;
 let sourceY = BASE_SOURCE_Y;
 
 function calculateDimensions() {
-    // New layout logic:
-    // Controls take up 20% area on the right (min 260px)
-    // Left Padding is 10%
-    // Right padding is minimal (20px)
+    // Layout: Controls are now below the canvas
+    // Canvas takes up to 900px width, centered
 
-    // Determine controls width based on CSS logic (20% or min 260px)
-    let controlsWidth = 0;
-    if (window.innerWidth > 900) {
-        controlsWidth = Math.max(window.innerWidth * 0.20, 260);
-    }
-
-    const paddingLeft = window.innerWidth * 0.10;
-    const paddingRight = 20; // Minimal right padding
-    const gap = 24;
-
-    // Canvas width is remaining space
-    let targetWidth;
-    let targetHeight;
-
-    if (window.innerWidth > 900) {
-        targetWidth = Math.floor(window.innerWidth - paddingLeft - paddingRight - controlsWidth - gap);
-        targetHeight = window.innerHeight - 180; // height minus header/padding
-    } else {
-        // Mobile/Tablet: Stacked layout (90% width approx)
-        targetWidth = Math.floor(window.innerWidth * 0.90);
-        targetHeight = 500; // Fixed height
-    }
+    const padding = 40;
+    const container = document.getElementById('canvas-container');
+    const containerWidth = container ? container.offsetWidth : window.innerWidth - padding;
+    let targetWidth = Math.min(containerWidth, 960);
 
     scaleFactor = targetWidth / BASE_SIM_WIDTH;
     simWidth = targetWidth;
 
     // Graph below simulation inside canvas
     graphWidth = simWidth;
-    // Calculate graph height based on remaining space in targetHeight
-    // Base Sim Height uses up some portion.. let's try to fit it all
-    // Or just let height be determined by scale and ensure it fits?
 
-    // Actually, let's fix height to targetHeight and scale contents to fit?
-    // Or just set canvasHeight to targetHeight and layout components inside.
-
-    // Let's stick to the scaling logic but constrain height
     let calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-    let calculatedGraphHeight = Math.min(Math.floor(250 * scaleFactor), targetHeight - calculatedSimHeight - 20);
-
-    // If graph height is too small, we might need to reduce scale
-    if (calculatedGraphHeight < 100) {
-        // Scale is too big for height, recalculate based on height
-        // This serves as a "contain" fit
-        const maxContentHeight = targetHeight - 120; // 100px min for graph
-        const contentBaseHeight = BASE_HEIGHT;
-        // simplistic re-scale if needed, but width-based usually works fine for wide layouts
-    }
+    let calculatedGraphHeight = Math.floor(200 * scaleFactor);
 
     canvasWidth = simWidth;
-    canvasHeight = calculatedSimHeight + calculatedGraphHeight + 20;
-
-    // Ensure we don't exceed targetHeight (scrolling constraint)
-    if (canvasHeight > targetHeight && window.innerWidth > 900) {
-        // Re-calculate scale to fit height
-        const totalBaseHeight = BASE_HEIGHT + 250 + 20; // sim + graph + gap
-        // Max height available
-        const maxH = targetHeight;
-        scaleFactor = maxH / totalBaseHeight;
-
-        // Re-apply widths
-        simWidth = Math.floor(BASE_SIM_WIDTH * scaleFactor);
-        canvasWidth = simWidth;
-        canvasHeight = maxH;
-
-        // update heights
-        calculatedSimHeight = Math.floor(BASE_HEIGHT * scaleFactor);
-        calculatedGraphHeight = maxH - calculatedSimHeight - 20;
-    }
+    canvasHeight = calculatedSimHeight + calculatedGraphHeight + Math.floor(60 * scaleFactor);
 
     graphX = 0;
     graphY = calculatedSimHeight + 20;
@@ -674,9 +620,9 @@ function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
     push();
 
     // Force vertical layout params
-    const graphLeft = graphX + s(40);
-    const graphRight = canvasWidth - s(40);
-    const graphTop = graphY + s(40);
+    const graphLeft = s(50);
+    const graphRight = canvasWidth - s(50);
+    const graphTop = graphY + s(20);
     const graphBottom = canvasHeight - s(40);
     const graphMidY = graphBottom; // Intensity 0 is at the bottom
     const splitExitY = barrierY + s(18);
@@ -699,7 +645,7 @@ function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
     fill(textColor[0], textColor[1], textColor[2]);
     noStroke();
     textSize(s(10));
-    textAlign(CENTER);
+    textAlign(CENTER, CENTER);
     text("Position on Screen", (graphLeft + graphRight) / 2, graphBottom + s(20));
 
     push();
