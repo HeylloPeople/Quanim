@@ -304,8 +304,8 @@ function drawStateLabels() {
 function drawProbabilityGraph() {
     push();
 
-    const graphLeft = s(20);
-    const graphRight = canvasWidth - s(20);
+    const graphLeft = s(50);
+    const graphRight = canvasWidth - s(50);
     const graphTop = graphY + s(20);
     const graphBottom = canvasHeight - s(40);
     const graphMidX = canvasWidth / 2;
@@ -314,7 +314,7 @@ function drawProbabilityGraph() {
     fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
     stroke(textColor[0], textColor[1], textColor[2], 50);
     strokeWeight(1);
-    rect(graphLeft - s(10), graphTop - s(30), graphRight - graphLeft + s(20), graphBottom - graphTop + s(60), s(8));
+    rect(graphLeft - s(10), graphTop - s(30), graphRight - graphLeft + s(20), graphBottom - graphTop + s(40), 20);
 
     // Title
     fill(textColor[0], textColor[1], textColor[2]);
@@ -324,7 +324,7 @@ function drawProbabilityGraph() {
     text("Probability Distribution", graphMidX, graphTop - s(10));
 
     // Bar chart
-    const barWidth = s(80);
+    const barWidth = s(50);
     const maxBarHeight = graphBottom - graphTop - s(60);
 
     // Spin up bar

@@ -631,7 +631,7 @@ function drawWaveGraph(slit1X, slit2X, waveColor, simWavelength) {
     fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
     stroke(barrierColor[0], barrierColor[1], barrierColor[2], 100);
     strokeWeight(1);
-    rect(graphLeft - s(10), graphTop - s(20), graphRight - graphLeft + s(20), graphBottom - graphTop + s(30), s(8));
+    rect(graphLeft - s(10), graphTop - s(20), graphRight - graphLeft + s(20), graphBottom - graphTop + s(30), 20);
 
     // Axis
     stroke(textColor[0], textColor[1], textColor[2], 150);

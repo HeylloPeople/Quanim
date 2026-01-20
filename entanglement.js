@@ -383,7 +383,7 @@ function drawParticle(x, y, label, isMeasured, measuredState, animationValue) {
         ellipse(x, y, s(18), s(18));
 
         // Arrow for measured state
-        stroke(255, 255, 255, 220);
+        stroke(particleColor[0], particleColor[1], particleColor[2], 220);
         strokeWeight(s(3));
         let arrowSize = s(35);
 
@@ -456,8 +456,8 @@ function drawStateLabels() {
 function drawCorrelationGraph() {
     push();
 
-    const graphLeft = s(20);
-    const graphRight = canvasWidth - s(20);
+    const graphLeft = s(50);
+    const graphRight = canvasWidth - s(50);
     const graphTop = graphY + s(20);
     const graphBottom = canvasHeight - s(40);
     const graphMidX = canvasWidth / 2;
@@ -466,7 +466,7 @@ function drawCorrelationGraph() {
     fill(colors.bg[0] - 5, colors.bg[1] - 5, colors.bg[2] - 5);
     stroke(textColor[0], textColor[1], textColor[2], 50);
     strokeWeight(1);
-    rect(graphLeft - s(10), graphTop - s(30), graphRight - graphLeft + s(20), graphBottom - graphTop + s(60), s(8));
+    rect(graphLeft - s(10), graphTop - s(30), graphRight - graphLeft + s(20), graphBottom - graphTop + s(40), 20);
 
     // Title
     fill(textColor[0], textColor[1], textColor[2]);
