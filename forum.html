@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum - Quanim Community</title>
+    <meta name="description"
+        content="Join the Quanim community forum. Ask questions, share ideas, and discuss quantum physics with fellow learners.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           Forum Page Styles
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .forum-hero {
+            padding: 130px 24px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .forum-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(255, 107, 107, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .forum-hero h1 {
+            font-family: var(--font-heading);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--coral) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .forum-hero p {
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Categories */
+        .forum-categories {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .category-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px 24px;
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+        }
+
+        .category-card .cat-icon {
+            font-size: 2rem;
+            margin-bottom: 14px;
+        }
+
+        .category-card h3 {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .category-card p {
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .category-card .cat-count {
+            display: inline-block;
+            margin-top: 12px;
+            font-family: var(--font-body);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cat-general {
+            border-color: rgba(0, 229, 255, 0.15);
+        }
+
+        .cat-general:hover {
+            border-color: var(--cyan);
+            box-shadow: 0 8px 30px rgba(0, 229, 255, 0.08);
+        }
+
+        .cat-help {
+            border-color: rgba(255, 107, 107, 0.15);
+        }
+
+        .cat-help:hover {
+            border-color: var(--coral);
+            box-shadow: 0 8px 30px rgba(255, 107, 107, 0.08);
+        }
+
+        .cat-ideas {
+            border-color: rgba(251, 191, 36, 0.15);
+        }
+
+        .cat-ideas:hover {
+            border-color: var(--amber);
+            box-shadow: 0 8px 30px rgba(251, 191, 36, 0.08);
+        }
+
+        .cat-resources {
+            border-color: rgba(167, 139, 250, 0.15);
+        }
+
+        .cat-resources:hover {
+            border-color: var(--violet);
+            box-shadow: 0 8px 30px rgba(167, 139, 250, 0.08);
+        }
+
+        /* Posts Section */
+        .forum-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px 80px;
+        }
+
+        .forum-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .forum-toolbar h2 {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .btn-new-post {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            font-family: var(--font-body);
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--coral), #ff8a65);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.25);
+        }
+
+        .btn-new-post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.35);
+        }
+
+        /* Post List */
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .post-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            transition: all var(--transition-normal);
+            cursor: pointer;
+        }
+
+        .post-item:hover {
+            border-color: var(--border-hover);
+            transform: translateX(4px);
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .avatar-cyan {
+            background: rgba(0, 229, 255, 0.12);
+        }
+
+        .avatar-violet {
+            background: rgba(167, 139, 250, 0.12);
+        }
+
+        .avatar-coral {
+            background: rgba(255, 107, 107, 0.12);
+        }
+
+        .avatar-amber {
+            background: rgba(251, 191, 36, 0.12);
+        }
+
+        .avatar-emerald {
+            background: rgba(52, 211, 153, 0.12);
+        }
+
+        .post-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .post-title {
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .post-category {
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+        }
+
+        .post-category.cat-tag-general {
+            background: rgba(0, 229, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .post-category.cat-tag-help {
+            background: rgba(255, 107, 107, 0.1);
+            color: var(--coral);
+        }
+
+        .post-category.cat-tag-ideas {
+            background: rgba(251, 191, 36, 0.1);
+            color: var(--amber);
+        }
+
+        .post-category.cat-tag-resources {
+            background: rgba(167, 139, 250, 0.1);
+            color: var(--violet);
+        }
+
+        .post-time {
+            font-family: var(--font-body);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .post-replies {
+            font-family: var(--font-body);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* New Post Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-xl);
+            padding: 36px 32px;
+            max-width: 560px;
+            width: 100%;
+            position: relative;
+        }
+
+        .modal h2 {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-normal);
+        }
+
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: border-color var(--transition-normal);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--cyan);
+        }
+
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-group select {
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23606075' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+        }
+
+        .form-group select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 14px;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--coral), #ff8a65);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 60px 24px 40px;
+            text-align: center;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .footer-logo span {
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-family: var(--font-body);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color var(--transition-normal);
+            font-family: var(--font-body);
+        }
+
+        .footer-link:hover {
+            color: var(--cyan);
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .forum-hero {
+                padding: 110px 20px 40px;
+            }
+
+            .forum-categories {
+                grid-template-columns: 1fr 1fr;
+                padding: 0 16px 40px;
+            }
+
+            .forum-content {
+                padding: 0 16px 60px;
+            }
+
+            .forum-toolbar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .post-item {
+                padding: 16px 18px;
+            }
+
+            .modal {
+                padding: 28px 24px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .forum-categories {
+                grid-template-columns: 1fr;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="navbar-logo"><span>Quanim</span></a>
+        <button class="navbar-toggle" id="navToggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <ul class="navbar-links" id="navLinks">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="simulations.html">Simulations</a></li>
+            <li><a href="forum.html" class="active">Forum</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="forum-hero">
+        <h1>Community Forum</h1>
+        <p>Ask questions, share ideas, and help fellow quantum learners. Every voice matters.</p>
+    </section>
+
+    <!-- Categories -->
+    <div class="forum-categories">
+        <div class="category-card cat-general">
+            <div class="cat-icon">💬</div>
+            <h3>General Discussion</h3>
+            <p>Talk about anything related to quantum physics, the Quanim platform, or science in general.</p>
+            <span class="cat-count">24 threads</span>
+        </div>
+        <div class="category-card cat-help">
+            <div class="cat-icon">🆘</div>
+            <h3>Help & Doubts</h3>
+            <p>Stuck on a concept or simulation? Ask here and the community will help you out.</p>
+            <span class="cat-count">18 threads</span>
+        </div>
+        <div class="category-card cat-ideas">
+            <div class="cat-icon">💡</div>
+            <h3>Ideas & Suggestions</h3>
+            <p>Have an idea for a new feature or simulation? Share it and let us know!</p>
+            <span class="cat-count">12 threads</span>
+        </div>
+        <div class="category-card cat-resources">
+            <div class="cat-icon">📚</div>
+            <h3>Resources</h3>
+            <p>Share and discover books, papers, videos, and other quantum learning resources.</p>
+            <span class="cat-count">9 threads</span>
+        </div>
+    </div>
+
+    <!-- Posts -->
+    <div class="forum-content">
+        <div class="forum-toolbar">
+            <h2>Recent Posts</h2>
+            <button class="btn-new-post" id="btnNewPost">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5v14M5 12h14" />
+                </svg>
+                New Post
+            </button>
+        </div>
+
+        <div class="post-list">
+            <div class="post-item">
+                <div class="post-avatar avatar-cyan">🧑‍🔬</div>
+                <div class="post-body">
+                    <div class="post-title">Can someone explain quantum tunneling intuitively?</div>
+                    <div class="post-meta">
+                        <span class="post-category cat-tag-help">Help</span>
+                        <span class="post-time">2 hours ago</span>
+                        <span class="post-replies">💬 7 replies</span>
+                    </div>
+                </div>
+            </div>
+            <div class="post-item">
+                <div class="post-avatar avatar-violet">👩‍🏫</div>
+                <div class="post-body">
+                    <div class="post-title">Suggestion: Add a Stern-Gerlach experiment simulation</div>
+                    <div class="post-meta">
+                        <span class="post-category cat-tag-ideas">Ideas</span>
+                        <span class="post-time">5 hours ago</span>
+                        <span class="post-replies">💬 12 replies</span>
+                    </div>
+                </div>
+            </div>
+            <div class="post-item">
+                <div class="post-avatar avatar-emerald">🎓</div>
+                <div class="post-body">
+                    <div class="post-title">Great YouTube series on quantum computing basics</div>
+                    <div class="post-meta">
+                        <span class="post-category cat-tag-resources">Resources</span>
+                        <span class="post-time">1 day ago</span>
+                        <span class="post-replies">💬 4 replies</span>
+                    </div>
+                </div>
+            </div>
+            <div class="post-item">
+                <div class="post-avatar avatar-amber">🔬</div>
+                <div class="post-body">
+                    <div class="post-title">How does the double-slit experiment differ with electrons vs photons?</div>
+                    <div class="post-meta">
+                        <span class="post-category cat-tag-general">General</span>
+                        <span class="post-time">2 days ago</span>
+                        <span class="post-replies">💬 15 replies</span>
+                    </div>
+                </div>
+            </div>
+            <div class="post-item">
+                <div class="post-avatar avatar-coral">🤔</div>
+                <div class="post-body">
+                    <div class="post-title">Difference between superposition and entanglement?</div>
+                    <div class="post-meta">
+                        <span class="post-category cat-tag-help">Help</span>
+                        <span class="post-time">3 days ago</span>
+                        <span class="post-replies">💬 9 replies</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Post Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" id="modalClose">×</button>
+            <h2>Create a New Post</h2>
+            <form id="newPostForm">
+                <div class="form-group">
+                    <label for="postTitle">Title</label>
+                    <input type="text" id="postTitle" placeholder="What's your question or idea?">
+                </div>
+                <div class="form-group">
+                    <label for="postCategory">Category</label>
+                    <select id="postCategory">
+                        <option value="">Select a category</option>
+                        <option value="general">General Discussion</option>
+                        <option value="help">Help & Doubts</option>
+                        <option value="ideas">Ideas & Suggestions</option>
+                        <option value="resources">Resources</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="postMessage">Message</label>
+                    <textarea id="postMessage" placeholder="Share your thoughts in detail..."></textarea>
+                </div>
+                <button type="submit" class="form-submit">Post to Forum</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-logo"><span>Quanim</span></div>
+        <p class="footer-text">© 2026 Quanim. Exploring the quantum world, one wave at a time.</p>
+        <div class="footer-links">
+            <a href="index.html" class="footer-link">Home</a>
+            <a href="simulations.html" class="footer-link">Simulations</a>
+            <a href="#" class="footer-link">Discord</a>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile nav toggle
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('open');
+        });
+
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => navLinks.classList.remove('open'));
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(13, 13, 15, 0.92)';
+            } else {
+                navbar.style.background = 'rgba(13, 13, 15, 0.75)';
+            }
+        });
+
+        // Modal
+        const btnNewPost = document.getElementById('btnNewPost');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalClose = document.getElementById('modalClose');
+
+        btnNewPost.addEventListener('click', () => {
+            modalOverlay.classList.add('open');
+        });
+
+        modalClose.addEventListener('click', () => {
+            modalOverlay.classList.remove('open');
+        });
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.classList.remove('open');
+            }
+        });
+
+        // Form submit
+        document.getElementById('newPostForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('postTitle').value;
+            const category = document.getElementById('postCategory').value;
+            const message = document.getElementById('postMessage').value;
+
+            if (!title || !category || !message) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            // Add post to list
+            const categoryMap = {
+                general: { tag: 'cat-tag-general', label: 'General', avatar: 'avatar-cyan', emoji: '💬' },
+                help: { tag: 'cat-tag-help', label: 'Help', avatar: 'avatar-coral', emoji: '🆘' },
+                ideas: { tag: 'cat-tag-ideas', label: 'Ideas', avatar: 'avatar-amber', emoji: '💡' },
+                resources: { tag: 'cat-tag-resources', label: 'Resources', avatar: 'avatar-violet', emoji: '📚' }
+            };
+
+            const cat = categoryMap[category];
+            const postList = document.querySelector('.post-list');
+            const postHTML = `
+                <div class="post-item" style="animation: fadeInUp 0.4s ease both;">
+                    <div class="post-avatar ${cat.avatar}">${cat.emoji}</div>
+                    <div class="post-body">
+                        <div class="post-title">${title}</div>
+                        <div class="post-meta">
+                            <span class="post-category ${cat.tag}">${cat.label}</span>
+                            <span class="post-time">Just now</span>
+                            <span class="post-replies">💬 0 replies</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            postList.insertAdjacentHTML('afterbegin', postHTML);
+
+            // Reset form & close modal
+            document.getElementById('newPostForm').reset();
+            modalOverlay.classList.remove('open');
+        });
+
+        // Animate cards on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.category-card, .post-item').forEach((el, i) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = `opacity 0.5s ease ${i * 0.05}s, transform 0.5s ease ${i * 0.05}s`;
+            observer.observe(el);
+        });
+    </script>
+</body>
+
+</html>

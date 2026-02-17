@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulations - Quanim</title>
+    <meta name="description"
+        content="Explore interactive quantum physics simulations: Double-Slit Experiment, Quantum Superposition, and Quantum Entanglement.">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           Simulations Page Styles
+           ═══════════════════════════════════════════════════════════════════ */
+
+        .sims-hero {
+            padding: 130px 24px 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sims-hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at 50% 0%, rgba(0, 229, 255, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .sims-hero h1 {
+            font-family: var(--font-heading);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--cyan) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sims-hero p {
+            font-family: var(--font-body);
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* Simulation Grid */
+        .sims-grid {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px 100px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .sim-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 36px 28px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sim-card::before {
+            content: none;
+        }
+
+        .sim-card:hover {
+            transform: scale(1.03);
+            border-color: var(--border-hover);
+            z-index: 10;
+        }
+
+        .sim-card-1 {
+            border-color: rgba(0, 229, 255, 0.12);
+        }
+
+        .sim-card-1:hover {
+            border-color: var(--cyan);
+            box-shadow: 0 12px 40px rgba(0, 229, 255, 0.1);
+        }
+
+        .sim-card-2 {
+            border-color: rgba(167, 139, 250, 0.12);
+        }
+
+        .sim-card-2:hover {
+            border-color: var(--violet);
+            box-shadow: 0 12px 40px rgba(167, 139, 250, 0.1);
+        }
+
+        .sim-card-3 {
+            border-color: rgba(52, 211, 153, 0.12);
+        }
+
+        .sim-card-3:hover {
+            border-color: var(--emerald);
+            box-shadow: 0 12px 40px rgba(52, 211, 153, 0.1);
+        }
+
+        .sim-card-icon {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .sim-card:hover .sim-card-icon {
+            transform: none;
+        }
+
+        .sim-card-title {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .sim-card-description {
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 28px;
+            flex-grow: 1;
+        }
+
+        .sim-card-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: var(--font-body);
+            border-radius: var(--radius-full);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .sim-card-btn svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .sim-card:hover .sim-card-btn svg {
+            transform: translateX(4px);
+        }
+
+        .sim-card-1 .sim-card-btn {
+            background: rgba(0, 229, 255, 0.12);
+            color: var(--cyan);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        .sim-card-1 .sim-card-btn:hover {
+            background: rgba(0, 229, 255, 0.2);
+        }
+
+        .sim-card-2 .sim-card-btn {
+            background: rgba(167, 139, 250, 0.12);
+            color: var(--violet);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+
+        .sim-card-2 .sim-card-btn:hover {
+            background: rgba(167, 139, 250, 0.2);
+        }
+
+        .sim-card-3 .sim-card-btn {
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--emerald);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .sim-card-3 .sim-card-btn:hover {
+            background: rgba(52, 211, 153, 0.2);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 60px 24px 40px;
+            text-align: center;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-logo {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .footer-logo span {
+            background: linear-gradient(135deg, var(--cyan), var(--violet));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-family: var(--font-body);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .footer-link {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color var(--transition-normal);
+            font-family: var(--font-body);
+        }
+
+        .footer-link:hover {
+            color: var(--cyan);
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .sims-hero {
+                padding: 110px 20px 40px;
+            }
+
+            .sims-grid {
+                grid-template-columns: 1fr;
+                padding: 0 16px 60px;
+            }
+
+            .sim-card {
+                padding: 28px 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <a href="index.html" class="navbar-logo"><span>Quanim</span></a>
+        <button class="navbar-toggle" id="navToggle" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+        <ul class="navbar-links" id="navLinks">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="simulations.html" class="active">Simulations</a></li>
+            <li><a href="forum.html">Forum</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="sims-hero">
+        <h1>Simulations</h1>
+        <p>Explore the quantum world through interactive, physics-accurate visualizations. Adjust parameters in
+            real-time and watch quantum phenomena unfold.</p>
+    </section>
+
+    <!-- Simulation Cards -->
+    <div class="sims-grid">
+        <a href="double-slit.html" class="sim-card sim-card-1">
+            <div class="sim-card-icon">🌊</div>
+            <h3 class="sim-card-title">Double-Slit Experiment</h3>
+            <p class="sim-card-description">
+                Discover how light and matter behave as both waves and particles. Watch as waves pass through
+                two slits to create mesmerizing interference patterns — the experiment that revolutionized
+                physics and revealed the quantum nature of reality.
+            </p>
+            <span class="sim-card-btn">
+                Explore Simulation
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+
+        <a href="superposition.html" class="sim-card sim-card-2">
+            <div class="sim-card-icon">⚛️</div>
+            <h3 class="sim-card-title">Quantum Superposition</h3>
+            <p class="sim-card-description">
+                Explore Schrödinger's famous thought experiment in action. See a quantum particle exist in
+                multiple states simultaneously until the moment of measurement — when the wavefunction
+                collapses and reality crystallizes into a single outcome.
+            </p>
+            <span class="sim-card-btn">
+                Explore Simulation
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+
+        <a href="entanglement.html" class="sim-card sim-card-3">
+            <div class="sim-card-icon">🔗</div>
+            <h3 class="sim-card-title">Quantum Entanglement</h3>
+            <p class="sim-card-description">
+                Witness Einstein's "spooky action at a distance" firsthand. Create entangled particle pairs
+                and observe how measuring one particle instantaneously determines the state of its partner —
+                no matter how far apart they are.
+            </p>
+            <span class="sim-card-btn">
+                Explore Simulation
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+            </span>
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-logo"><span>Quanim</span></div>
+        <p class="footer-text">© 2026 Quanim. Exploring the quantum world, one wave at a time.</p>
+        <div class="footer-links">
+            <a href="index.html" class="footer-link">Home</a>
+            <a href="forum.html" class="footer-link">Forum</a>
+            <a href="#" class="footer-link">Discord</a>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile nav toggle
+        const navToggle = document.getElementById('navToggle');
+        const navLinks = document.getElementById('navLinks');
+        navToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('open');
+        });
+
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => navLinks.classList.remove('open'));
+        });
+
+        // Navbar scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            navbar.style.background = window.scrollY > 50
+                ? 'rgba(13, 13, 15, 0.92)'
+                : 'rgba(13, 13, 15, 0.75)';
+        });
+
+        // Animate cards
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const card = entry.target;
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+
+                    // Clear inline styles after animation so CSS hover effects work
+                    const handleTransitionEnd = () => {
+                        card.style.transition = '';
+                        card.style.transform = '';
+                        card.style.opacity = '';
+                        card.removeEventListener('transitionend', handleTransitionEnd);
+                    };
+                    card.addEventListener('transitionend', handleTransitionEnd);
+
+                    observer.unobserve(card);
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.sim-card').forEach((card, i) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = `opacity 0.6s ease ${i * 0.15}s, transform 0.6s ease ${i * 0.15}s`;
+            observer.observe(card);
+        });
+    </script>
+</body>
+
+</html>

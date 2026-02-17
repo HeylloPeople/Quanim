@@ -93,8 +93,7 @@ function updateColors(theme) {
 }
 
 function initColors() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    updateColors(savedTheme);
+    updateColors('dark');
 }
 
 function setup() {
